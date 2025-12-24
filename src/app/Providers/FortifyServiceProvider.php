@@ -40,6 +40,8 @@ class FortifyServiceProvider extends ServiceProvider
             return view('auth.register');
         });
 
+        Fortify::redirects('login', '/attendance');
+
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->email;
 

@@ -19,9 +19,54 @@
                     <img src="{{ asset('images/COACHTECHヘッダーロゴ.png') }}" alt="COACHTECH勤怠管理アプリのロゴ">
                 </a>
             </div>
+            <div class="header__right">
+                @guest
+                    {{-- メニューなし --}}
+                @endguest
+
+                @auth
+                    @php
+                        $route = request()->route() ? request()->route()->getName() : '';
+                        $isAttendanceIndex = request()->route('attendance.index');
+                        $isDone = isset($status) && $status === 'DONE';
+                    @endphp
+                    <nav class="header__nav">
+                        <ul class="header__menu">
+                            @if ($isAttendanceIndex && $isDone)
+                                <li><a href="{{ route('attendance.list') }}">今月の出勤一覧</a></li>
+                                <li><a href="{{ route('requests.index') }}">申請一覧</a></li>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button class="header__link-button" type="submit">ログアウト</button>
+                                    </form>
+                                </li>
+                            @elseif (request()->routeIs(
+                                    'attendance.index',
+                                    'attendance.list',
+                                    'requests.index',
+                                    'attendance.show',
+                                    'attendance.pending'))
+                                <li><a href="{{ route('attendance.index') }}">勤怠</a></li>
+                                <li><a href="/attendance/list">勤怠一覧</a></li>
+                                <li><a href="/stamp_correction_request/list">申請</a></li>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button class="header__link-button">ログアウト</button>
+                                    </form>
+                                </li>
+                            @endif
+                        </ul>
+                    </nav>
+                @endauth
+            </div>
         </div>
     </header>
-    @yield('content')
+    <main>
+        @yield('content')
+    </main>
+    @yield('script')
 </body>
 
 </html>
