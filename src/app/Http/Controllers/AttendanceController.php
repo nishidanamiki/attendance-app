@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use App\Models\Attendance;
 use App\Models\BreakTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use PhpParser\Node\Expr\FuncCall;
+// use PhpParser\Node\Expr\FuncCall;
 
 class AttendanceController extends Controller
 {
@@ -102,5 +103,50 @@ class AttendanceController extends Controller
         ]);
 
         return redirect()->route('attendance.index');
+    }
+
+    public function list(Request $request)
+    {
+        $currentMonth = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month)->startOfMonth() : now()->startOfMonth();
+
+        $attendances = Attendance::with('breakTimes')->where('user_id', auth()->id())->whereBetween('work_date', [$currentMonth->copy()->startOfMonth(), $currentMonth->copy()->endOfMonth()])->get()->keyBy(fn ($attendance) => Carbon::parse($attendance->work_date)->toDateString());
+
+        $days = CarbonPeriod::create(
+            $currentMonth->copy()->startOfMonth(),
+            $currentMonth->copy()->endOfMonth());
+
+        return view('attendance.list', compact('attendances', 'currentMonth', 'days'));
+    }
+
+    public function show($id)
+    {
+        $attendance = Attendance::with('breakTimes')->where('id', $id)->where('user_id', auth()->id())->first();
+
+        $date = $attendance?->work_date;
+
+        $breakTimes = collect();
+        if ($attendance) {
+            $breakTimes = $attendance->breakTimes->sortBy('break_in_at')->values();
+        }
+
+        $breakTimesForForm = $breakTimes->push(null);
+
+        return view('attendance.detail', compact('attendance', 'date', 'breakTimesForForm'));
+    }
+
+    public function openByDate(Request $request)
+    {
+        $date = $request->query('date');
+
+        $attendance = Attendance::with('breakTimes')->where('user_id', auth()->id())->whereDate('work_date', $date)->first();
+
+        $breakTimes = collect();
+        if ($attendance) {
+            $breakTimes = $attendance->breakTimes->sortBy('break_in_at')->values();
+        }
+
+        $breakTimesForForm = $breakTimes->push(null);
+
+        return view('attendance.detail', compact('attendance', 'date', 'breakTimesForForm'));
     }
 }

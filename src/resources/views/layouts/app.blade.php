@@ -15,7 +15,7 @@
     <header class="header">
         <div class="header__inner">
             <div class="header__left">
-                <a href="{{ url('/') }}">
+                <a href="{{ url('/attendance') }}">
                     <img src="{{ asset('images/COACHTECHヘッダーロゴ.png') }}" alt="COACHTECH勤怠管理アプリのロゴ">
                 </a>
             </div>
@@ -26,8 +26,7 @@
 
                 @auth
                     @php
-                        $route = request()->route() ? request()->route()->getName() : '';
-                        $isAttendanceIndex = request()->route('attendance.index');
+                        $isAttendanceIndex = request()->routeIs('attendance.index');
                         $isDone = isset($status) && $status === 'DONE';
                     @endphp
                     <nav class="header__nav">
@@ -41,12 +40,7 @@
                                         <button class="header__link-button" type="submit">ログアウト</button>
                                     </form>
                                 </li>
-                            @elseif (request()->routeIs(
-                                    'attendance.index',
-                                    'attendance.list',
-                                    'requests.index',
-                                    'attendance.show',
-                                    'attendance.pending'))
+                            @else
                                 <li><a href="{{ route('attendance.index') }}">勤怠</a></li>
                                 <li><a href="/attendance/list">勤怠一覧</a></li>
                                 <li><a href="/stamp_correction_request/list">申請</a></li>

@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\StampCorrectionRequestController;
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\AdminStaffController;
 use Dom\Attr;
 use Illuminate\Support\Facades\Route;
 
@@ -21,5 +25,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('attendance.clock_out');
     Route::post('/attendance/break-in', [AttendanceController::class, 'breakIn'])->name('attendance.break_in');
     Route::post('/attendance/break-out', [AttendanceController::class, 'breakOut'])->name('attendance.break_out');
+    Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('requests.index');
+    Route::post('/stamp-correction-requests', [StampCorrectionRequestController::class, 'store'])->name('stamp_correction_request.store');
+    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('/attendance/detail', [AttendanceController::class, 'openByDate'])->name('attendance.openByDate');
 });
+
 

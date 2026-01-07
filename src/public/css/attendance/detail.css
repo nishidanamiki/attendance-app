@@ -1,0 +1,122 @@
+body {
+    background-color: #f0eff2;
+}
+
+.detail-container {
+    width: 55%;
+    margin: 50px auto;
+}
+
+.detail-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.page-title {
+    padding-left: 20px;
+    border-left: 10px solid #000;
+}
+
+.detail-table {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 10px;
+}
+
+.detail-table tr th {
+    color: #737373;
+    text-align: left;
+    padding: 20px 30px;
+    vertical-align: middle;
+}
+
+.detail-table tr td {
+    padding: 20px 30px;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.detail-table tr {
+    border-bottom: 2px solid #e1e1e1;
+}
+
+.detail-table tr:last-child {
+    border-bottom: none;
+}
+
+.cols3 {
+    display: grid;
+    grid-template-columns: 120px 40px 120px;
+    align-items: center;
+    justify-content: start;
+    column-gap: 30px;
+}
+
+.cols3 .tilde {
+    text-align: center;
+    color: #000;
+    font-weight: bold;
+}
+
+.cols3 input[type="time"] {
+    width: 120px;
+    text-align: center;
+    font-family: inherit;
+}
+
+.cols3 .remarks {
+    grid-column: 1 / 4;
+    width: 100%;
+}
+
+.value-box {
+    width: 120px;
+    padding: 1px 10px;
+    text-align: center;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+}
+
+.break-row {
+    margin-bottom: 4px;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    padding: 1px 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+}
+
+.cols3 textarea {
+    border: 1px solid #d9d9d9;
+    border-radius: 3px;
+    resize: none;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.form__error {
+    color: #ff0000;
+}
+
+.submit {
+    width: 100px;
+    margin-top: 20px;
+    padding: 5px 12px;
+    border-radius: 5px;
+    background-color: #000;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    letter-spacing: 0.2rem;
+}
