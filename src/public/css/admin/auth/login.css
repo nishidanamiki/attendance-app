@@ -1,4 +1,4 @@
-.register-container {
+.admin-login {
     width: 40%;
     margin: 50px auto;
     text-align: center;
@@ -12,11 +12,11 @@
 label {
     font-weight: bold;
     text-align: left;
-    margin-top: 1rem;
+    margin-top: 2rem;
 }
 
 input {
-    line-height: 1.5rem;
+    line-height: 2rem;
     border: 1px solid #000;
     border-radius: 3px;
 }
@@ -30,22 +30,17 @@ input {
     width: 100%;
     background-color: #000;
     border-radius: 3px;
-    margin: 2rem auto 1rem;
+    margin: 4rem auto 1rem;
 }
 
 .form-button__submit {
     display: inline-block;
     width: 100%;
-    line-height: 1.6rem;
+    line-height: 2rem;
     appearance: none;
     border: none;
     background: none;
     color: #fff;
     font-weight: bold;
     cursor: pointer;
-}
-
-.login-link {
-    text-decoration: none;
-    color: #0073cc;
 }

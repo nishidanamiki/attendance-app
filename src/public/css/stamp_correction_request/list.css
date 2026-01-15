@@ -1,0 +1,87 @@
+body {
+    background-color: #F0eff2;
+}
+
+.request-list {
+    width: 60%;
+    margin: 50px auto;
+}
+
+.page-title {
+    padding-left: 20px;
+    border-left: 10px solid #000;
+}
+
+.tab-menu {
+    display: flex;
+    gap: 50px;
+    margin-top: 60px;
+    padding-left: 50px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
+}
+
+.tab-menu a {
+    text-decoration: none;
+    color: #000;
+}
+
+.tab.is-active {
+    font-weight: bold;
+}
+
+.request-table {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 10px;
+    margin-top: 50px;
+    table-layout: fixed;
+}
+
+.request-table tr th {
+    color: #737373;
+    text-align: left;
+    padding: 20px 30px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.request-table tr td {
+    color: #737373;
+    text-align: left;
+    padding: 20px 30px;
+    font-weight: bold;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.request-table tr th:first-child,
+.request-table tr td:first-child {
+    text-align: center;
+}
+
+.request-table tr td a {
+    text-decoration: none;
+    color: #000;
+}
+
+.request-table tr td:nth-of-type(4) {
+    white-space: inherit;
+}
+
+.request-table tr {
+    border-bottom: 2px solid #e1e1e1;
+}
+
+.request-table tr:first-child {
+    border-bottom: 3px solid #e1e1e1;
+}
+
+.request-table tr:last-child {
+    border-bottom: none;
+}
+
+.request-table .remarks-cell {
+    max-height: 3rem;
+    overflow: hidden;
+}

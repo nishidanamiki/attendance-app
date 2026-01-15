@@ -65,7 +65,7 @@ body {
     font-family: inherit;
 }
 
-.cols3 .remarks {
+.remarks {
     grid-column: 1 / 4;
     width: 100%;
 }
@@ -105,6 +105,10 @@ input[type="time"] {
     font-family: inherit;
 }
 
+.remarks-readonly {
+    width: 100%;
+}
+
 .form__error {
     color: #ff0000;
 }
@@ -119,4 +123,10 @@ input[type="time"] {
     font-size: 16px;
     cursor: pointer;
     letter-spacing: 0.2rem;
+}
+
+.notice {
+    color: #f87879;
+    font-weight: 600;
+    letter-spacing: 0.1rem;
 }

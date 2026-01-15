@@ -18,10 +18,6 @@ return new class extends Migration
             $table->date('work_date')->nullable();
             $table->time('clock_in_at')->nullable();
             $table->time('clock_out_at')->nullable();
-            $table->time('break1_start_at')->nullable();
-            $table->time('break1_end_at')->nullable();
-            $table->time('break2_start_at')->nullable();
-            $table->time('break2_end_at')->nullable();
             $table->text('remarks');
             $table->string('status')->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();

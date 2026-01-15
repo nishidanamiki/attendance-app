@@ -13,6 +13,11 @@ class Attendance extends Model
         'user_id', 'work_date', 'clock_in_at', 'clock_out_at'
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function breakTimes()
     {
         return $this->hasMany(BreakTime::class);

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use App\Models\Attendance;
 use App\Models\BreakTime;
+use App\Models\StampCorrectionRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 // use PhpParser\Node\Expr\FuncCall;
@@ -107,31 +108,63 @@ class AttendanceController extends Controller
 
     public function list(Request $request)
     {
-        $currentMonth = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month)->startOfMonth() : now()->startOfMonth();
+        $user = $request->user();
 
-        $attendances = Attendance::with('breakTimes')->where('user_id', auth()->id())->whereBetween('work_date', [$currentMonth->copy()->startOfMonth(), $currentMonth->copy()->endOfMonth()])->get()->keyBy(fn ($attendance) => Carbon::parse($attendance->work_date)->toDateString());
+        $monthParam = $request->query('month');
+        if ($monthParam) {
+            $currentMonth = Carbon::createFormFormat('Y-m', $monthParam)->startOFMonth();
+        } else {
+            $currentMonth = Carbon::now()->startOfMonth();
+        }
 
-        $days = CarbonPeriod::create(
-            $currentMonth->copy()->startOfMonth(),
-            $currentMonth->copy()->endOfMonth());
+        $start = $currentMonth->copy()->startOfMonth();
+        $end = $currentMonth->copy()->endOfMonth();
 
-        return view('attendance.list', compact('attendances', 'currentMonth', 'days'));
+        $days = CarbonPeriod::create($start, $end);
+
+        $attendances = Attendance::with('breakTimes')->where('user_id', $user->id)->whereBetween('work_date', [$start->toDateString(),$end->toDateString()])->get()->keyBy('work_date');
+
+        $isAdmin = false;
+        $targetUser = $user;
+
+        return view('attendance.list', compact('attendances', 'currentMonth', 'days', 'isAdmin', 'targetUser'));
     }
 
     public function show($id)
     {
-        $attendance = Attendance::with('breakTimes')->where('id', $id)->where('user_id', auth()->id())->first();
+        $loginUser = auth()->user();
 
-        $date = $attendance?->work_date;
+        $query = Attendance::with(['user', 'breakTimes'])->where('id', $id);
 
-        $breakTimes = collect();
-        if ($attendance) {
-            $breakTimes = $attendance->breakTimes->sortBy('break_in_at')->values();
+        if (! $loginUser->is_admin) {
+            $query->where('user_id', $loginUser->id);
         }
 
-        $breakTimesForForm = $breakTimes->push(null);
+        $attendance = $query->firstOrFail();
 
-        return view('attendance.detail', compact('attendance', 'date', 'breakTimesForForm'));
+        $date = $attendance->work_date;
+
+        $pendingRequest = null;
+
+        if ($attendance) {
+            $pendingRequest = StampCorrectionRequest::with('breakRequests')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
+        }
+
+        if ($pendingRequest) {
+            $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
+            $displayClockOut = $pendingRequest->clock_out_at ?? $attendance->clock_out_at;
+
+            $breakTimesForForm = $pendingRequest->breakRequests->sortBy('break_in_at')->values();
+        } else {
+            $displayClockIn = $attendance->clock_in_at;
+            $displayClockOut = $attendance->clock_out_at;
+
+            $breakTimes = $attendance->breakTimes->sortBy('break_in_at')->values();
+
+            $breakTimesForForm = $breakTimes->push(null);
+        }
+
+        return view('attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest'));
     }
 
     public function openByDate(Request $request)
@@ -140,13 +173,25 @@ class AttendanceController extends Controller
 
         $attendance = Attendance::with('breakTimes')->where('user_id', auth()->id())->whereDate('work_date', $date)->first();
 
-        $breakTimes = collect();
+        $pendingRequest = null;
         if ($attendance) {
-            $breakTimes = $attendance->breakTimes->sortBy('break_in_at')->values();
+            $pendingRequest = StampCorrectionRequest::with('breakRequests')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
         }
 
-        $breakTimesForForm = $breakTimes->push(null);
+        if ($pendingRequest) {
+            $displayClockIn = $pendingRequest->clock_in_at ?? $attendance?->clock_in_at;
+            $displayClockOut = $pendingRequest->clock_out_at ?? $attendance?->clock_out_at;
 
-        return view('attendance.detail', compact('attendance', 'date', 'breakTimesForForm'));
+            $breakTimesForForm = $pendingRequest->breakRequests->sortBy('break_in_at')->values();
+        } else {
+            $displayClockIn = $attendance?->clock_in_at;
+            $displayClockOut = $attendance?->clock_out_at;
+
+            $breakTimes = $attendance ? $attendance->breakTimes->sortBy('break_in_at')->values() : collect();
+
+            $breakTimesForForm = $breakTimes->push(null);
+        }
+
+        return view('attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest'));
     }
 }

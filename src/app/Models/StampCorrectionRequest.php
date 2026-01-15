@@ -10,15 +10,24 @@ class StampCorrectionRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'attendance_id',
+        'user_id', 'attendance_id', 'work_date',
         'clock_in_at', 'clock_out_at',
-        'break1_start_at', 'break1_end_at',
-        'break2_start_at', 'break2_end_at',
         'remarks', 'status',
+        'approve_by', 'approved_at',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function attendance()
+    {
+        return $this->belongsTo(Attendance::class, 'attendance_id');
+    }
 
     public function breakRequests()
     {
-        return $this->hasmany(StampCorrectionRequest::class, 'stamp_correction_request_id');
+        return $this->hasMany(StampCorrectionRequestBreakTime::class);
     }
 }

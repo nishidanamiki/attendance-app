@@ -12,7 +12,7 @@
 
         <section class="login-form">
             <h2 class="visually-hidden">ログインフォーム</h2>
-            <form action="" method="POST" novalidate>
+            <form action="{{ route('login') }}" method="POST" novalidate>
                 @csrf
                 <div class="form-group">
                     <label for="email">メールアドレス</label>

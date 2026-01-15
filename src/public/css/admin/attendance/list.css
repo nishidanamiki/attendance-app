@@ -2,7 +2,7 @@ body {
     background-color: #f0eff2;
 }
 
-.attendance-list {
+.list-container {
     width: 55%;
     margin: 50px auto;
 }
@@ -12,7 +12,7 @@ body {
     border-left: 10px solid #000;
 }
 
-.month-nav {
+.date-nav {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -23,7 +23,7 @@ body {
     padding: 20px;
 }
 
-.month-nav a {
+.date-nav a {
     text-decoration: none;
     color: #737373;
     font-weight: bold;
@@ -35,24 +35,24 @@ body {
     font-weight: bold;
 }
 
-.month-nav__center {
+.date-nav__center {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.month-nav__center img {
+.date-nav__center img {
     width: 25px;
     height: 25px;
     margin: 10px;
 }
 
-.month-nav__center p {
+.date-nav__center p {
     font-size: 1.5rem;
     font-weight: bold;
 }
 
-.attendance-table {
+.attendees-table {
     margin-top: 20px;
     width: 100%;
     background-color: #fff;
@@ -61,38 +61,33 @@ body {
     letter-spacing: 0.1rem;
 }
 
-.attendance-table th {
+.attendees-table th {
     border-bottom: 2px solid #e1e1e1;
     text-align: center;
     color: #737373;
 }
 
-.attendance-table tr {
+.attendees-table tr {
     border-bottom: 1px solid #e1e1e1;
 }
 
-.attendance-table tr:last-child {
+.attendees-table tr:last-child {
     border-bottom: none;
 }
 
-.attendance-table th,
-.attendance-table td {
+.attendees-table th,
+.attendees-table td {
     vertical-align: middle;
     padding: 8px 30px;
 }
 
-.attendance-table td {
+.attendees-table td {
     text-align: center;
     color: #737373;
     font-weight: bold;
 }
 
-.attendance-table th:first-child,
-.attendance-table td:first-child {
-    text-align: left;
-}
-
-.attendance-table td a {
+.attendees-table td a {
     text-decoration: none;
     color: #000;
 }

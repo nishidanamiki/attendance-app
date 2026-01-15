@@ -9,9 +9,22 @@ use App\Http\Requests\StoreStampCorrectionRequest;
 
 class StampCorrectionRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('stamp_correction_request.index');
+        $tab = $request->query('tab', 'pending');
+
+        $query = StampCorrectionRequest::where('user_id', auth()->id());
+
+        if ($tab === 'approved') {
+            $query->where('status', 'APPROVE');
+        } else {
+            $tab = 'pending';
+            $query->where('status', 'PENDING');
+        }
+
+        $requests = $query->orderByDesc('created_at')->get();
+
+        return view('stamp_correction_request.list', compact('requests', 'tab'));
     }
 
     public function store(StoreStampCorrectionRequest $request)

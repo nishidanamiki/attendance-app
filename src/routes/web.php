@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/admin/login', function () {
+    return view('admin.auth.login');
+})->name('admin.login');
+
 Route::middleware('auth')->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clock_in');
@@ -26,10 +30,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/break-in', [AttendanceController::class, 'breakIn'])->name('attendance.break_in');
     Route::post('/attendance/break-out', [AttendanceController::class, 'breakOut'])->name('attendance.break_out');
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
-    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('requests.index');
+    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('stamp_correction_request.list');
     Route::post('/stamp-correction-requests', [StampCorrectionRequestController::class, 'store'])->name('stamp_correction_request.store');
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
     Route::get('/attendance/detail', [AttendanceController::class, 'openByDate'])->name('attendance.openByDate');
 });
 
+
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/attendance/list', [AdminAttendanceController::class, 'index'])->name('attendance.list');
+    Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('/staff/list', [AdminStaffController::class, 'index'])->name('staff.list');
+    Route::get('/requests/list', [AdminRequestController::class, 'index'])->name('stamp_correction_request.list');
+    Route::get('/attendance/staff/{id}', [AdminAttendanceController::class, 'monthly'])->name('attendance.monthly');
+});
 
