@@ -36,7 +36,7 @@ input {
 .form-button__submit {
     display: inline-block;
     width: 100%;
-    line-height: 1.6rem;
+    line-height: 2rem;
     appearance: none;
     border: none;
     background: none;

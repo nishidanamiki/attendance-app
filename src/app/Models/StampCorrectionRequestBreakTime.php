@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\StampCorrectionRequest;
+use App\Models\BreakTime;
 
 class StampCorrectionRequestBreakTime extends Model
 {
@@ -19,5 +21,10 @@ class StampCorrectionRequestBreakTime extends Model
     public function stampCorrectionRequest()
     {
         return $this->belongsTo(StampCorrectionRequest::class);
+    }
+
+    public function breakTime()
+    {
+        return $this->belongsTo(BreakTime::class);
     }
 }

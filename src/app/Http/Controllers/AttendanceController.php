@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use App\Models\User;
 use App\Models\Attendance;
 use App\Models\BreakTime;
 use App\Models\StampCorrectionRequest;
@@ -112,7 +113,7 @@ class AttendanceController extends Controller
 
         $monthParam = $request->query('month');
         if ($monthParam) {
-            $currentMonth = Carbon::createFormFormat('Y-m', $monthParam)->startOFMonth();
+            $currentMonth = Carbon::createFromFormat('Y-m', $monthParam)->startOfMonth();
         } else {
             $currentMonth = Carbon::now()->startOfMonth();
         }
@@ -144,11 +145,7 @@ class AttendanceController extends Controller
 
         $date = $attendance->work_date;
 
-        $pendingRequest = null;
-
-        if ($attendance) {
-            $pendingRequest = StampCorrectionRequest::with('breakRequests')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
-        }
+        $pendingRequest = StampCorrectionRequest::with('breakRequests')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
 
         if ($pendingRequest) {
             $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
@@ -164,14 +161,24 @@ class AttendanceController extends Controller
             $breakTimesForForm = $breakTimes->push(null);
         }
 
-        return view('attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest'));
+        return view('attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest'
+        ));
     }
 
     public function openByDate(Request $request)
     {
         $date = $request->query('date');
+        $isAdmin = auth()->user()->is_admin;
 
-        $attendance = Attendance::with('breakTimes')->where('user_id', auth()->id())->whereDate('work_date', $date)->first();
+        if ($request->filled('user_id') && $isAdmin) {
+            $targetUser = User::findOrFail($request->query('user_id'));
+        } else {
+            $targetUser = $request->user();
+        }
+
+        $userForDisplay = $targetUser;
+
+        $attendance = Attendance::with('breakTimes')->where('user_id', $targetUser->id)->whereDate('work_date', $date)->first();
 
         $pendingRequest = null;
         if ($attendance) {
@@ -192,6 +199,6 @@ class AttendanceController extends Controller
             $breakTimesForForm = $breakTimes->push(null);
         }
 
-        return view('attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest'));
+        return view('attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest', 'targetUser', 'userForDisplay', 'isAdmin'));
     }
 }

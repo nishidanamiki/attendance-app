@@ -71,7 +71,7 @@ class StampCorrectionRequestController extends Controller
         }
 
         if ($attendanceId) {
-            return redirect()->route('attendance.show', $attendanceId);
+            return redirect()->route('attendance.detail', $attendanceId);
         }
 
         return redirect()->route('attendance.openByDate', ['date' => $workDate]);

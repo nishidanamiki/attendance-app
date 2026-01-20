@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdminUpdateAttendanceRequest;
 use App\Models\Attendance;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 
 class AdminAttendanceController extends Controller
 {
@@ -51,31 +50,68 @@ class AdminAttendanceController extends Controller
         ]);
     }
 
-    public function monthly(Request $request, $id) {
-        $targetUser = User::findOrFail($id);
+    public function show($id)
+    {
+        $attendance = Attendance::with(['user', 'breakTimes', 'stampCorrectionRequests.breakRequests'])->findOrFail($id);
 
-        $monthParam = $request->query('month');
-        if ($monthParam) {
-            $currentMonth = Carbon::createFromFormat('Y-m', $monthParam)->startOfMonth();
+        $date = $attendance->work_date;
+
+        $pendingRequest = $attendance->stampCorrectionRequests()->where('status', 'pending')->latest()->first();
+
+        if ($pendingRequest) {
+            $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
+            $displayClockOut = $pendingRequest->clock_out_at ?? $attendance->clock_out_at;
+            $breakTimesForForm = $pendingRequest->breakRequests->sortBy('break_in_at')->values();
         } else {
-            $currentMonth = Carbon::now()->startOfMonth();
+            $displayClockIn = $attendance->clock_in_at;
+            $displayClockOut = $attendance->clock_out_at;
+            $breakTimesForForm = $attendance->breakTimes->sortBy('break_in_at')->values();
+            $breakTimesForForm->push(null);
         }
 
-        $start = $currentMonth->copy()->startOfMonth();
-        $end = $currentMonth->copy()->endOfMonth();
+        $userForDisplay = $attendance->user;
 
-        $days = CarbonPeriod::create($start, $end);
+        return view('admin.attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest', 'userForDisplay'));
+    }
 
-        $attendances = Attendance::with('breakTimes')->where('user_id', $targetUser->id)->whereBetween('work_date', [$start->toDateString(), $end->toDateString()])->get()->keyBy('work_date');
+    public function update(AdminUpdateAttendanceRequest $request, $id)
+    {
+        $date = $request->validated();
 
-        $isAdmin = true;
+        $attendance = Attendance::with('breakTimes')->findOrFail($id);
 
-        return view('attendance.list', compact(
-            'currentMonth',
-            'days',
-            'attendances',
-            'isAdmin',
-            'targetUser'
-        ));
+        $attendance->clock_in_at = $date['clock_in_at'] ?? null;
+        $attendance->clock_out_at = $date['clock_out_at'] ?? null;
+        $attendance->remarks = $date['remarks'];
+        $attendance->save();
+
+        $breakInput = $date['breaks'] ?? [];
+
+        foreach ($breakInput as $input) {
+
+            $start = $input['start'] ?? null;
+            $end = $input['end'] ?? null;
+
+                if (!empty($input['id'])) {
+                    $break = $attendance->breakTimes()->find($input['id']);
+                    if ($break) {
+                        if ($start === null && $end === null) {
+                            $break->delete();
+                        } else {
+                            $break->break_in_at = $start;
+                            $break->break_out_at = $end;
+                            $break->save();
+                        }
+                    }
+                    continue;
+                }
+                if ($start !== null || $end !== null) {
+                    $attendance->breakTimes()->create([
+                    'break_in_at' => $start,
+                    'break_out_at' => $end,
+                ]);
+            }
+        }
+        return redirect()->route('admin.attendance.show', $attendance->id);
     }
 }

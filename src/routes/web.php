@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StampCorrectionRequestController;
-use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Admin\AdminStaffController;
 use Dom\Attr;
@@ -30,18 +29,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/break-in', [AttendanceController::class, 'breakIn'])->name('attendance.break_in');
     Route::post('/attendance/break-out', [AttendanceController::class, 'breakOut'])->name('attendance.break_out');
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
-    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('stamp_correction_request.list');
     Route::post('/stamp-correction-requests', [StampCorrectionRequestController::class, 'store'])->name('stamp_correction_request.store');
-    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show'])->name('attendance.detail');
     Route::get('/attendance/detail', [AttendanceController::class, 'openByDate'])->name('attendance.openByDate');
 });
 
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/attendance/list', [AdminAttendanceController::class, 'index'])->name('attendance.list');
-    Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('/attendance/{id}', [AdminAttendanceController::class, 'show'])->name('attendance.show');
+    Route::patch('/attendance/{id}', [AdminAttendanceController::class, 'update'])->name('attendance.update');
     Route::get('/staff/list', [AdminStaffController::class, 'index'])->name('staff.list');
-    Route::get('/requests/list', [AdminRequestController::class, 'index'])->name('stamp_correction_request.list');
-    Route::get('/attendance/staff/{id}', [AdminAttendanceController::class, 'monthly'])->name('attendance.monthly');
+    Route::get('/attendance/staff/{id}', [AdminStaffController::class, 'monthly'])->name('attendance.monthly');
 });
 
+Route::middleware(['auth', 'verified'])
+    ->get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('stamp_correction_request.list');

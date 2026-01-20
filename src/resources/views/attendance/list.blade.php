@@ -25,14 +25,30 @@
             <h1 class="page-title">勤怠一覧</h1>
         @endif
         <div class="month-nav">
-            <a href="{{ route('attendance.list', ['month' => $prevMonth->format('Y-m')]) }}"><span
-                    class="light-gray">←</span>前月</a>
+            @if ($isAdmin && isset($targetUser))
+                <a
+                    href="{{ route('admin.attendance.monthly', ['id' => $targetUser->id, 'month' => $prevMonth->format('Y-m')]) }}">
+                    <span class="light-gray">←</span>前月
+                </a>
+            @else
+                <a href="{{ route('attendance.list', ['month' => $prevMonth->format('Y-m')]) }}">
+                    <span class="light-gray">←</span>前月
+                </a>
+            @endif
             <div class="month-nav__center">
                 <img src="{{ asset('images/icons/calendar_icon_08.svg') }}" alt="カレンダーアイコン">
                 <p>{{ $currentMonth->format('Y/m') }}</p>
             </div>
-            <a href="{{ route('attendance.list', ['month' => $nextMonth->format('Y-m')]) }}">翌月<span
-                    class="light-gray">→</span></a>
+            @if ($isAdmin && isset($targetUser))
+                <a
+                    href="{{ route('admin.attendance.monthly', ['id' => $targetUser->id, 'month' => $nextMonth->format('Y-m')]) }}">
+                    翌月<span class="light-gray">→</span>
+                </a>
+            @else
+                <a href="{{ route('attendance.list', ['month' => $nextMonth->format('Y-m')]) }}">
+                    翌月<span class="light-gray">→</span>
+                </a>
+            @endif
         </div>
         <table class="attendance-table">
             <tr>
@@ -82,7 +98,21 @@
                     <td>{{ $attendance ? $fmt($breakSeconds) : '' }}</td>
                     <td>{{ $workSeconds !== null ? $fmt($workSeconds) : '' }}</td>
                     <td>
-                        <a href="{{ route('attendance.openByDate', ['date' => $dateKey]) }}">詳細</a>
+                        @if ($isAdmin && $attendance)
+                            <a href="{{ route('admin.attendance.show', ['id' => $attendance->id]) }}">詳細</a>
+                        @elseif (!$isAdmin && $attendance)
+                            <a href="{{ route('attendance.detail', ['id' => $attendance->id]) }}">詳細</a>
+                        @else
+                            @if ($isAdmin)
+                                <a
+                                    href="{{ route('attendance.openByDate', [
+                                        'date' => $dateKey,
+                                        'user_id' => $targetUser->id,
+                                    ]) }}">詳細</a>
+                            @else
+                                <a href="{{ route('attendance.openByDate', ['date' => $dateKey]) }}">詳細</a>
+                            @endif
+                        @endif
                     </td>
                 </tr>
             @endforeach

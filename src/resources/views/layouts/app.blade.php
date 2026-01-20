@@ -24,31 +24,24 @@
                 </a>
             </div>
             <div class="header__right">
-                @guest
-                    {{-- メニューなし --}}
-                @endguest
-                @auth
-                    @if ($isAdmin)
-                        <nav class="header__nav">
-                            <ul class="header__menu">
+                <nav class="header__nav">
+                    <ul class="header__menu">
+                        @auth
+                            @if ($isAdmin)
                                 <li><a href="{{ route('admin.attendance.list') }}">勤怠一覧</a></li>
                                 <li><a href="{{ route('admin.staff.list') }}">スタッフ一覧</a></li>
-                                <li><a href="{{ route('admin.stamp_correction_request.list') }}">申請一覧</a></li>
+                                <li><a href="{{ route('stamp_correction_request.list') }}">申請一覧</a></li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST">
                                         @csrf
                                         <button class="header__link-button" type="submit">ログアウト</button>
                                     </form>
                                 </li>
-                            </ul>
-                        </nav>
-                    @else
-                        @php
-                            $isAttendanceIndex = request()->routeIs('attendance.index');
-                            $isDone = ($status ?? null) === 'DONE';
-                        @endphp
-                        <nav class="header__nav">
-                            <ul class="header__menu">
+                            @else
+                                @php
+                                    $isAttendanceIndex = request()->routeIs('attendance.index');
+                                    $isDone = ($status ?? null) === 'DONE';
+                                @endphp
                                 @if ($isAttendanceIndex && $isDone)
                                     <li><a href="{{ route('attendance.list') }}">今月の出勤一覧</a></li>
                                     <li><a href="{{ route('stamp_correction_request.list') }}">申請一覧</a></li>
@@ -69,10 +62,13 @@
                                         </form>
                                     </li>
                                 @endif
-                            </ul>
-                        </nav>
-                    @endif
-                @endauth
+                            @endif
+                        @endauth
+                        @guest
+                            {{-- メニューなし --}}
+                        @endguest
+                    </ul>
+                </nav>
             </div>
         </div>
     </header>

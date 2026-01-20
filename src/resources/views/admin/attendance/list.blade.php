@@ -17,11 +17,13 @@
             <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}">翌日 <span class="light-gray">→</span></a>
         </div>
         @php
-            function minutes_to_hm($minutes)
-            {
-                $hours = intdiv($minutes, 60);
-                $mins = $minutes % 60;
-                return sprintf('%d:%02d', $hours, $mins);
+            if (!function_exists('minutes_to_hm')) {
+                function minutes_to_hm($minutes)
+                {
+                    $hours = intdiv($minutes, 60);
+                    $mins = $minutes % 60;
+                    return sprintf('%d:%02d', $hours, $mins);
+                }
             }
         @endphp
         <table class="attendees-table">

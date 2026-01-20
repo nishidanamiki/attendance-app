@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Attendance;
+use App\Models\StampCorrectionRequestBreakTime;
 
 class StampCorrectionRequest extends Model
 {
@@ -23,11 +26,16 @@ class StampCorrectionRequest extends Model
 
     public function attendance()
     {
-        return $this->belongsTo(Attendance::class, 'attendance_id');
+        return $this->belongsTo(Attendance::class);
     }
 
     public function breakRequests()
     {
         return $this->hasMany(StampCorrectionRequestBreakTime::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }
