@@ -52,7 +52,7 @@ class AdminAttendanceController extends Controller
 
     public function show($id)
     {
-        $attendance = Attendance::with(['user', 'breakTimes', 'stampCorrectionRequests.breakRequests'])->findOrFail($id);
+        $attendance = Attendance::with(['user', 'breakTimes', 'stampCorrectionRequests.breakTimes'])->findOrFail($id);
 
         $date = $attendance->work_date;
 
@@ -61,7 +61,7 @@ class AdminAttendanceController extends Controller
         if ($pendingRequest) {
             $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
             $displayClockOut = $pendingRequest->clock_out_at ?? $attendance->clock_out_at;
-            $breakTimesForForm = $pendingRequest->breakRequests->sortBy('break_in_at')->values();
+            $breakTimesForForm = $pendingRequest->breakTimes->sortBy('break_in_at')->values();
         } else {
             $displayClockIn = $attendance->clock_in_at;
             $displayClockOut = $attendance->clock_out_at;

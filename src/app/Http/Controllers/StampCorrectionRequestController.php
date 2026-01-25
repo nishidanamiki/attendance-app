@@ -11,18 +11,23 @@ class StampCorrectionRequestController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $tab = $request->query('tab', 'pending');
 
-        $query = StampCorrectionRequest::where('user_id', auth()->id());
-
         if ($tab === 'approved') {
-            $query->where('status', 'APPROVE');
+            $status = 'approved';
         } else {
             $tab = 'pending';
-            $query->where('status', 'PENDING');
+            $status = 'pending';
         }
 
-        $requests = $query->orderByDesc('created_at')->get();
+        if ($user->is_admin) {
+            $requests = StampCorrectionRequest::with(['user', 'attendance'])->where('status', $status)->orderByDesc('created_at')->get();
+
+            return view('admin.stamp_correction_request.list', compact('requests', 'tab'));
+        }
+
+        $requests = StampCorrectionRequest::where('user_id', $user->id)->where('status', $status)->orderByDesc('created_at')->get();
 
         return view('stamp_correction_request.list', compact('requests', 'tab'));
     }
@@ -63,7 +68,7 @@ class StampCorrectionRequestController extends Controller
                 continue;
             }
 
-            $requestModel->breakRequests()->create([
+            $requestModel->breakTimes()->create([
                 'break_time_id' => $break['id'] ?? null,
                 'break_in_at' => $start,
                 'break_out_at' => $end,

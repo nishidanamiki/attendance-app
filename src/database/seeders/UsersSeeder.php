@@ -13,12 +13,15 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
+        $verifiedAt = now();
+
         User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => '管理者ユーザー',
                 'password' => Hash::make('password'),
                 'is_admin' => true,
+                'email_verified_at' => $verifiedAt,
             ]
         );
 
@@ -28,6 +31,7 @@ class UsersSeeder extends Seeder
                 'name' => 'スタッフ1',
                 'password' => Hash::make('password'),
                 'is_admin' => false,
+                'email_verified_at' => $verifiedAt,
             ]
         );
 
@@ -37,6 +41,7 @@ class UsersSeeder extends Seeder
                 'name' => 'スタッフ2',
                 'password' => Hash::make('password'),
                 'is_admin' => false,
+                'email_verified_at' => $verifiedAt,
             ]
         );
     }

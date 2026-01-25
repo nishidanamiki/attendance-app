@@ -117,5 +117,10 @@
                 </tr>
             @endforeach
         </table>
+        @if ($isAdmin && isset($targetUser))
+            <div class="attendance-actions">
+                <button class="csv-button" type="button">CSV出力</button>
+            </div>
+        @endif
     </div>
 @endsection

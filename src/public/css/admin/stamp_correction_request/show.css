@@ -1,0 +1,29 @@
+.remarks-readonly {
+    margin-left: 40px;
+}
+
+.approve-button {
+    width: 80px;
+    padding: 6px 20px;
+    margin-top: 30px;
+    border: none;
+    border-radius: 3px;
+    background-color: #000;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 0.1rem;
+}
+
+.approved-label {
+    width: 120px;
+    padding: 6px 20px;
+    text-align: center;
+    margin-top: 30px;
+    background-color: #696969;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: bold;
+    letter-spacing: 0.1rem;
+    margin-left: auto;
+}

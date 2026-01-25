@@ -41,16 +41,17 @@ body {
 .request-table tr th {
     color: #737373;
     text-align: left;
-    padding: 20px 30px;
+    font-size: 0.8rem;
+    padding: 10px 20px;
     vertical-align: middle;
-    white-space: nowrap;
 }
 
 .request-table tr td {
     color: #737373;
     text-align: left;
-    padding: 20px 30px;
+    padding: 10px 20px;
     font-weight: bold;
+    font-size: 0.8rem;
     vertical-align: middle;
     white-space: nowrap;
 }
@@ -58,6 +59,12 @@ body {
 .request-table tr th:first-child,
 .request-table tr td:first-child {
     text-align: center;
+}
+
+.request-table td:nth-child(4) .remarks-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .request-table tr td a {

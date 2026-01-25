@@ -53,6 +53,7 @@ body {
 }
 
 .attendance-table {
+    table-layout: fixed;
     margin-top: 20px;
     width: 100%;
     background-color: #fff;
@@ -85,14 +86,33 @@ body {
     text-align: center;
     color: #737373;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 .attendance-table th:first-child,
-.attendance-table td:first-child {
+.attendance-table td:first-child,
+.attendance-table th:last-child,
+.attendance-table td:last-child {
     text-align: left;
 }
 
 .attendance-table td a {
     text-decoration: none;
     color: #000;
+}
+
+.attendance-actions {
+    margin: 40px 0;
+    text-align: right;
+}
+
+.csv-button {
+    width: 120px;
+    padding: 6px 20px;
+    border: none;
+    background-color: #000;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.1rem;
 }

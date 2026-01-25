@@ -78,6 +78,10 @@ body {
     box-sizing: border-box;
 }
 
+.value-box--name {
+    margin-left: 10px;
+}
+
 .break-row {
     margin-bottom: 4px;
 }
@@ -88,6 +92,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 input[type="time"] {
     -webkit-appearance: none;
+    -moz-appearance: textfield;
     appearance: none;
     border: 1px solid #e1e1e1;
     border-radius: 4px;
@@ -99,7 +104,8 @@ input[type="time"] {
 
 .cols3 textarea {
     border: 1px solid #d9d9d9;
-    border-radius: 3px;
+    border-radius: 4px;
+    padding: 8px 10px;
     resize: none;
     font-weight: bold;
     font-family: inherit;

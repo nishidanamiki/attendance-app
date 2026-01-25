@@ -16,7 +16,7 @@ class StampCorrectionRequest extends Model
         'user_id', 'attendance_id', 'work_date',
         'clock_in_at', 'clock_out_at',
         'remarks', 'status',
-        'approve_by', 'approved_at',
+        'approved_by', 'approved_at',
     ];
 
     public function user()
@@ -29,9 +29,9 @@ class StampCorrectionRequest extends Model
         return $this->belongsTo(Attendance::class);
     }
 
-    public function breakRequests()
+    public function breakTimes()
     {
-        return $this->hasMany(StampCorrectionRequestBreakTime::class);
+        return $this->hasMany(StampCorrectionRequestBreakTime::class, 'stamp_correction_request_id');
     }
 
     public function approver()

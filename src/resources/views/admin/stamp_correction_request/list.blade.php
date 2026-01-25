@@ -1,9 +1,10 @@
 @extends('layouts.app')
 
-@section('title', '申請一覧 - COACHTECH勤怠管理アプリ')
+@section('title', '管理者・申請一覧 - COACHTECH勤怠管理アプリ')
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/stamp_correction_request/list.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/stamp_correction_request/list.css') }}">
 @endsection
 
 @section('content')
@@ -11,11 +12,13 @@
         <h1 class="page-title">申請一覧</h1>
         <nav class="tab-menu">
             <a href="{{ route('stamp_correction_request.list', ['tab' => 'pending']) }}"
-                class="tab {{ $tab === 'pending' ? 'is-active' : '' }}">
+                class="tab
+                {{ $tab === 'pending' ? 'is-active' : '' }}">
                 承認待ち
             </a>
             <a href="{{ route('stamp_correction_request.list', ['tab' => 'approved']) }}"
-                class="tab {{ $tab === 'approved' ? 'is-active' : '' }}">
+                class="tab
+                {{ $tab === 'approved' ? 'is-active' : '' }}">
                 承認済み
             </a>
         </nav>
@@ -49,7 +52,8 @@
                     <td>{{ $request->created_at->format('Y/m/d') }}</td>
                     <td>
                         @if ($request->attendance_id)
-                            <a href="{{ route('attendance.detail', ['id' => $request->attendance->id]) }}">
+                            <a
+                                href="{{ route('admin.stamp_correction_request.show', ['attendance_correct_request_id' => $request->id]) }}">
                                 詳細
                             </a>
                         @else

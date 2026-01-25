@@ -8,7 +8,7 @@
         <th>名前</th>
         <td>
             <div class="cols3">
-                <span class="value-box">{{ $userForDisplay->name }}</span>
+                <span class="value-box value-box--name">{{ $userForDisplay->name }}</span>
             </div>
         </td>
     </tr>
@@ -28,7 +28,7 @@
         </td>
     </tr>
     <tr>
-        <th>出勤・退勤</th>
+        <th><label for="clock_in_at">出勤・退勤</label></th>
         <td>
             @if ($pendingRequest)
                 <div class="cols3">
@@ -42,10 +42,10 @@
                 </div>
             @else
                 <div class="cols3">
-                    <input type="time" name="clock_in_at"
+                    <input id="clock_in_at" type="time" name="clock_in_at"
                         value="{{ $displayClockIn ? substr($displayClockIn, 0, 5) : '' }}">
                     <span class="tilde">~</span>
-                    <input type="time" name="clock_out_at"
+                    <input id="clock_out_at" type="time" name="clock_out_at"
                         value="{{ $displayClockOut ? substr($displayClockOut, 0, 5) : '' }}">
                 </div>
                 <div class="form__error">
@@ -59,7 +59,9 @@
     @foreach ($breakTimesForForm as $i => $breakTime)
         <tr>
             <th>
-                {{ $i === 0 ? '休憩' : '休憩' . ($i + 1) }}
+                <label for="break_{{ $i }}_start">
+                    休憩{{ $i === 0 ? '' : $i + 1 }}
+                </label>
             </th>
             <td>
                 <div class="cols3 break-row">
@@ -74,7 +76,8 @@
                     @else
                         <input type="hidden" name="breaks[{{ $i }}][id]"
                             value="{{ $breakTime?->id ?? '' }}">
-                        <input type="time" name="breaks[{{ $i }}][start]"
+                        <input id="break_{{ $i }}_start" type="time"
+                            name="breaks[{{ $i }}][start]"
                             value="{{ $breakTime?->break_in_at ? substr($breakTime->break_in_at, 0, 5) : '' }}">
                         <span class="tilde">~</span>
                         <input type="time" name="breaks[{{ $i }}][end]"

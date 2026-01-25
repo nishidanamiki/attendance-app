@@ -145,13 +145,13 @@ class AttendanceController extends Controller
 
         $date = $attendance->work_date;
 
-        $pendingRequest = StampCorrectionRequest::with('breakRequests')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
+        $pendingRequest = StampCorrectionRequest::with('breakTimes')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
 
         if ($pendingRequest) {
             $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
             $displayClockOut = $pendingRequest->clock_out_at ?? $attendance->clock_out_at;
 
-            $breakTimesForForm = $pendingRequest->breakRequests->sortBy('break_in_at')->values();
+            $breakTimesForForm = $pendingRequest->breakTimes->sortBy('break_in_at')->values();
         } else {
             $displayClockIn = $attendance->clock_in_at;
             $displayClockOut = $attendance->clock_out_at;
@@ -182,14 +182,14 @@ class AttendanceController extends Controller
 
         $pendingRequest = null;
         if ($attendance) {
-            $pendingRequest = StampCorrectionRequest::with('breakRequests')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
+            $pendingRequest = StampCorrectionRequest::with('breakTimes')->where('attendance_id', $attendance->id)->where('status', 'pending')->first();
         }
 
         if ($pendingRequest) {
             $displayClockIn = $pendingRequest->clock_in_at ?? $attendance?->clock_in_at;
             $displayClockOut = $pendingRequest->clock_out_at ?? $attendance?->clock_out_at;
 
-            $breakTimesForForm = $pendingRequest->breakRequests->sortBy('break_in_at')->values();
+            $breakTimesForForm = $pendingRequest->breakTimes->sortBy('break_in_at')->values();
         } else {
             $displayClockIn = $attendance?->clock_in_at;
             $displayClockOut = $attendance?->clock_out_at;

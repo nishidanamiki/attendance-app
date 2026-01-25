@@ -1,0 +1,4 @@
+.request-table tr th:first-child,
+.request-table tr td:first-child {
+    text-align: left;
+}
