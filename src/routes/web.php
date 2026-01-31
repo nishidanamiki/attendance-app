@@ -47,7 +47,9 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::post('/attendance/break-in', [AttendanceController::class, 'breakIn'])->name('attendance.break_in');
     Route::post('/attendance/break-out', [AttendanceController::class, 'breakOut'])->name('attendance.break_out');
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('stamp_correction_request.list');
     Route::post('/stamp-correction-requests', [StampCorrectionRequestController::class, 'store'])->name('stamp_correction_request.store');
+    Route::get('/stamp_correction_request/{id}', [StampCorrectionRequestController::class, 'show'])->name('stamp_correction_request.show');
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show'])->name('attendance.detail');
     Route::get('/attendance/detail', [AttendanceController::class, 'openByDate'])->name('attendance.openByDate');
 });
@@ -62,6 +64,3 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminStampCorrectionRequestController::class, 'show'])->name('stamp_correction_request.show');
     Route::patch('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminStampCorrectionRequestController::class, 'approve'])->name('stamp_correction_request.approve');
 });
-
-Route::middleware(['auth', 'verified'])
-    ->get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])->name('stamp_correction_request.list');

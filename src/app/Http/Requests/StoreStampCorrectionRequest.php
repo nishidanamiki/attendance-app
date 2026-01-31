@@ -27,10 +27,10 @@ class StoreStampCorrectionRequest extends FormRequest
             'work_date' => ['required_without:attendance_id', 'date'],
             'clock_in_at' => ['nullable', 'date_format:H:i'],
             'clock_out_at' => ['nullable', 'date_format:H:i'],
-            'breaks' => ['array'],
+            'breaks' => ['nullable', 'array'],
             'breaks.*.id' => ['nullable', 'integer'],
-            'breaks.*.start' => ['nullable', 'date_format:H:i'],
-            'breaks.*.end' => ['nullable', 'date_format:H:i'],
+            'breaks.*.start' => ['nullable', 'date_format:H:i', 'required_with:breaks.*.end'],
+            'breaks.*.end' => ['nullable', 'date_format:H:i', 'required_with:breaks.*.start'],
             'remarks' => ['required', 'string'],
         ];
     }

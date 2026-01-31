@@ -9,11 +9,18 @@
 @section('content')
     <div class="detail-container">
         <h1 class="page-title">勤怠詳細</h1>
+        @if ($errors->has('request'))
+            <p class="error">{{ $errors->first('request') }}</p>
+        @endif
         <form action="{{ route('stamp_correction_request.store') }}" method="POST" novalidate>
             @csrf
             <input type="hidden" name="work_date" value="{{ $date }}">
             <input type="hidden" name="attendance_id" value="{{ $attendance?->id ?? '' }}">
-            @include('attendance.partials.detail_table')
+            @if ($pendingRequest)
+                @include('attendance.partials.detail_table_text')
+            @else
+                @include('attendance.partials.detail_table_form')
+            @endif
             @if (!$pendingRequest)
                 <button class="submit" type="submit">修正</button>
             @endif

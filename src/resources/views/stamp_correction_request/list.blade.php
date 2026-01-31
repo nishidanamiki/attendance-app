@@ -49,7 +49,7 @@
                     <td>{{ $request->created_at->format('Y/m/d') }}</td>
                     <td>
                         @if ($request->attendance_id)
-                            <a href="{{ route('attendance.detail', ['id' => $request->attendance->id]) }}">
+                            <a href="{{ route('stamp_correction_request.show', ['id' => $request->id]) }}">
                                 詳細
                             </a>
                         @else

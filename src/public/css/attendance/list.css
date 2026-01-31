@@ -32,7 +32,7 @@ body {
 
 .light-gray {
     color: #b3b3b3;
-    font-weight: bold;
+    font-weight: bolder;
 }
 
 .month-nav__center {
@@ -113,6 +113,6 @@ body {
     background-color: #000;
     color: #fff;
     border-radius: 5px;
-    cursor: pointer;
+    text-decoration: none;
     letter-spacing: 0.1rem;
 }

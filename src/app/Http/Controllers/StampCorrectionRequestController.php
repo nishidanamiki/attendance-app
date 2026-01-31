@@ -11,6 +11,7 @@ class StampCorrectionRequestController extends Controller
 {
     public function index(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
         $tab = $request->query('tab', 'pending');
 
@@ -27,7 +28,7 @@ class StampCorrectionRequestController extends Controller
             return view('admin.stamp_correction_request.list', compact('requests', 'tab'));
         }
 
-        $requests = StampCorrectionRequest::where('user_id', $user->id)->where('status', $status)->orderByDesc('created_at')->get();
+        $requests = $user->stampCorrectionRequests()->where('status', $status)->orderByDesc('created_at')->get();
 
         return view('stamp_correction_request.list', compact('requests', 'tab'));
     }
@@ -48,6 +49,12 @@ class StampCorrectionRequestController extends Controller
             );
 
             $attendanceId = $attendance->id;
+        }
+
+        $alreadyPending = StampCorrectionRequest::where('attendance_id', $attendanceId)->where('status', 'pending')->exists();
+
+        if ($alreadyPending) {
+            return back()->withErrors(['request' => 'この日の修正申請はすでに承認待ちです']);
         }
 
         $requestModel = StampCorrectionRequest::create([
@@ -74,11 +81,33 @@ class StampCorrectionRequestController extends Controller
                 'break_out_at' => $end,
             ]);
         }
+        return redirect()->route('attendance.detail', $attendanceId);
+    }
 
-        if ($attendanceId) {
-            return redirect()->route('attendance.detail', $attendanceId);
-        }
+    public function show($id)
+    {
+        $user = auth()->user();
 
-        return redirect()->route('attendance.openByDate', ['date' => $workDate]);
+        $stampRequest = StampCorrectionRequest::with(['attendance.user', 'attendance.breakTimes', 'breakTimes'])->where('id', $id)->where('user_id', $user->id)->firstOrFail();
+
+        $attendance = $stampRequest->attendance;
+
+        $displayDate = $stampRequest->work_date ?? $attendance?->work_date;
+
+        $displayClockIn = $stampRequest->clock_in_at ?? $attendance?->clock_in_at;
+        $displayClockOut = $stampRequest->clock_out_at ?? $attendance?->clock_out_at;
+        $breakTimesForForm = $stampRequest->breakTimes;
+
+        $pendingRequest = $stampRequest;
+
+        return view('stamp_correction_request.show', compact(
+            'stampRequest',
+            'attendance',
+            'displayDate',
+            'displayClockIn',
+            'displayClockOut',
+            'breakTimesForForm',
+            'pendingRequest'
+        ));
     }
 }

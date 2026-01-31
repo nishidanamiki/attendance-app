@@ -23,11 +23,13 @@ class AdminStampCorrectionRequestController extends Controller
             $displayClockIn = $stampRequest->clock_in_at ?? $attendance->clock_in_at;
             $displayClockOut = $stampRequest->clock_out_at ?? $attendance->clock_out_at;
             $breakTimesForForm = $stampRequest->breakTimes;
+            $breakTimesForForm = $breakTimesForForm->values()->push(null);
             $pendingRequest = $stampRequest;
         } else {
             $displayClockIn = $attendance->clock_in_at;
             $displayClockOut = $attendance->clock_out_at;
             $breakTimesForForm = $attendance->breakTimes;
+            $breakTimesForForm = $breakTimesForForm->values()->push(null);
             $pendingRequest = null;
         }
 
@@ -49,9 +51,14 @@ class AdminStampCorrectionRequestController extends Controller
                 throw new \RuntimeException('対応する勤怠データが見つかりません');
             }
 
-            $attendance->clock_in_at = $stampRequest->clock_in_at;
-            $attendance->clock_out_at = $stampRequest->clock_out_at;
-            $attendance->remarks = $stampRequest->remarks;
+            if (!is_null($stampRequest->clock_in_at)) {
+                $attendance->clock_in_at = $stampRequest->clock_in_at;
+            }
+
+            if (!is_null($stampRequest->clock_out_at)) {
+                $attendance->clock_out_at = $stampRequest->clock_out_at;
+            }
+
             $attendance->save();
 
             $attendance->breakTimes()->delete();
@@ -69,6 +76,6 @@ class AdminStampCorrectionRequestController extends Controller
             $stampRequest->save();
         });
 
-        return back();
+        return redirect()->route('admin.stamp_correction_request.show', $stampRequest->id);
     }
 }

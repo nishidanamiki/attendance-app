@@ -10,7 +10,7 @@
 @section('content')
     <div class="detail-container">
         <h1 class="page-title">勤怠詳細</h1>
-        @include('attendance.partials.detail_table')
+        @include('attendance.partials.detail_table_text')
         @if ($stampRequest->status === 'pending')
             <form action="{{ route('admin.stamp_correction_request.approve', $stampRequest->id) }}" method="POST">
                 @csrf

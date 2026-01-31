@@ -14,7 +14,11 @@
             @method('PATCH')
             <input type="hidden" name="attendance_id" value="{{ $attendance->id }}">
             <input type="hidden" name="work_date" value="{{ $date ?? $attendance->work_date }}">
-            @include('attendance.partials.detail_table')
+            @if ($pendingRequest)
+                @include('attendance.partials.detail_table_text')
+            @else
+                @include('attendance.partials.detail_table_form')
+            @endif
             @if (!$pendingRequest)
                 <button class="submit" type="submit">修正</button>
             @endif

@@ -150,14 +150,11 @@ class AttendanceController extends Controller
         if ($pendingRequest) {
             $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
             $displayClockOut = $pendingRequest->clock_out_at ?? $attendance->clock_out_at;
-
             $breakTimesForForm = $pendingRequest->breakTimes->sortBy('break_in_at')->values();
         } else {
             $displayClockIn = $attendance->clock_in_at;
             $displayClockOut = $attendance->clock_out_at;
-
             $breakTimes = $attendance->breakTimes->sortBy('break_in_at')->values();
-
             $breakTimesForForm = $breakTimes->push(null);
         }
 
@@ -188,14 +185,11 @@ class AttendanceController extends Controller
         if ($pendingRequest) {
             $displayClockIn = $pendingRequest->clock_in_at ?? $attendance?->clock_in_at;
             $displayClockOut = $pendingRequest->clock_out_at ?? $attendance?->clock_out_at;
-
             $breakTimesForForm = $pendingRequest->breakTimes->sortBy('break_in_at')->values();
         } else {
             $displayClockIn = $attendance?->clock_in_at;
             $displayClockOut = $attendance?->clock_out_at;
-
             $breakTimes = $attendance ? $attendance->breakTimes->sortBy('break_in_at')->values() : collect();
-
             $breakTimesForForm = $breakTimes->push(null);
         }
 

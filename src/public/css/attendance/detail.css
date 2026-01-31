@@ -18,6 +18,11 @@ body {
     border-left: 10px solid #000;
 }
 
+.error {
+    color: #ff0000;
+    margin-bottom: 12px;
+}
+
 .detail-table {
     width: 100%;
     background-color: #fff;
@@ -132,6 +137,9 @@ input[type="time"] {
 }
 
 .notice {
+    width: 100%;
+    text-align: right;
+    align-self: stretch;
     color: #f87879;
     font-weight: 600;
     letter-spacing: 0.1rem;

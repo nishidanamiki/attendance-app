@@ -18,7 +18,7 @@ class StampCorrectionRequestBreakTime extends Model
         'break_out_at',
     ];
 
-    public function request()
+    public function stampCorrectionRequest()
     {
         return $this->belongsTo(StampCorrectionRequest::class, 'stamp_correction_request_id');
     }

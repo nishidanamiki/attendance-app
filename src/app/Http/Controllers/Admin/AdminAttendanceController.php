@@ -76,16 +76,16 @@ class AdminAttendanceController extends Controller
 
     public function update(AdminUpdateAttendanceRequest $request, $id)
     {
-        $date = $request->validated();
+        $data = $request->validated();
 
         $attendance = Attendance::with('breakTimes')->findOrFail($id);
 
-        $attendance->clock_in_at = $date['clock_in_at'] ?? null;
-        $attendance->clock_out_at = $date['clock_out_at'] ?? null;
-        $attendance->remarks = $date['remarks'];
+        $attendance->clock_in_at = $data['clock_in_at'] ?? null;
+        $attendance->clock_out_at = $data['clock_out_at'] ?? null;
+        $attendance->remarks = $data['remarks'];
         $attendance->save();
 
-        $breakInput = $date['breaks'] ?? [];
+        $breakInput = $data['breaks'] ?? [];
 
         foreach ($breakInput as $input) {
 
@@ -93,7 +93,7 @@ class AdminAttendanceController extends Controller
             $end = $input['end'] ?? null;
 
                 if (!empty($input['id'])) {
-                    $break = $attendance->breakTimes()->find($input['id']);
+                    $break = $attendance->breakTimes()->where('id', $input['id'])->first();
                     if ($break) {
                         if ($start === null && $end === null) {
                             $break->delete();
@@ -105,7 +105,7 @@ class AdminAttendanceController extends Controller
                     }
                     continue;
                 }
-                if ($start !== null || $end !== null) {
+                if ($start !== null && $end !== null) {
                     $attendance->breakTimes()->create([
                     'break_in_at' => $start,
                     'break_out_at' => $end,
