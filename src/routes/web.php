@@ -7,7 +7,6 @@ use App\Http\Controllers\StampCorrectionRequestController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Admin\AdminStaffController;
 use App\Http\Controllers\Admin\AdminStampCorrectionRequestController;
-use Dom\Attr;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 Route::get('/email/verify', function() {
     return view('auth.verify-email');

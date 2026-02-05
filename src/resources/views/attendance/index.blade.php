@@ -22,8 +22,12 @@
             @endif
         </div>
         <div class="datetime">
-            <div class="date" id="current-date"></div>
-            <div class="time" id="current-time"></div>
+            <div class="date" id="current-date">
+                {{ $now->locale('ja')->isoFormat('YYYY年MM月DD日(ddd)') }}
+            </div>
+            <div class="time" id="current-time">
+                {{ $now->format('H:i') }}
+            </div>
         </div>
         <div class="buttons">
             @if ($status === 'OFF')
