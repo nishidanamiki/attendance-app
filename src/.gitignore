@@ -5,9 +5,6 @@
 /public/storage
 /storage/*.key
 /storage/logs
-/storage/framework/*
-!/storage/framework/.gitignore
-!/storage/framework/cache/.gitignore
 /vendor
 .env
 .env.*
