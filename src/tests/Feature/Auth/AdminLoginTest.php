@@ -40,6 +40,8 @@ class AdminLoginTest extends TestCase
         User::factory()->create([
             'email' => 'test@example.com',
             'password' => Hash::make('correct-password'),
+            'email_verified_at' => now(),
+            'is_admin' => true,
         ]);
 
         $response = $this->from('/admin/login')->post('/login', [
@@ -50,5 +52,45 @@ class AdminLoginTest extends TestCase
         $response->assertRedirect('/admin/login');
         $response->assertSessionHasErrors('email');
         $this->followRedirects($response)->assertSee('ログイン情報が登録されていません');
+    }
+
+    public function test_admin_can_access_admin_pages()
+    {
+        $admin = User::factory()->create([
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password123'),
+            'email_verified_at' => now(),
+            'is_admin' => true,
+        ]);
+
+        $this->post('/login', [
+            'email' => 'admin@example.com',
+            'password' => 'password123',
+        ]);
+
+        $this->assertAuthenticatedAs($admin);
+
+        $response = $this->get('/admin/staff/list');
+        $response->assertOk();
+    }
+
+    public function test_non_admin_cannot_access_admin_pages()
+    {
+        $user = User::factory()->create([
+            'email' => 'user@example.com',
+            'password' => Hash::make('password123'),
+            'email_verified_at' => now(),
+            'is_admin' => false,
+        ]);
+
+        $this->post('/login', [
+            'email' => 'user@example.com',
+            'password' => 'password123',
+        ]);
+
+        $this->assertAuthenticatedAs($user);
+
+        $response = $this->get('/admin/attendance/list');
+        $response->assertRedirect('/attendance');
     }
 }

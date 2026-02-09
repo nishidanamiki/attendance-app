@@ -10,14 +10,12 @@ use App\Models\BreakTime;
 use App\Models\StampCorrectionRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-// use PhpParser\Node\Expr\FuncCall;
 
 class AttendanceController extends Controller
 {
     public function index()
     {
         $now = Carbon::now()->locale('ja');
-
         $attendance = Attendance::where('user_id', auth()->id())->whereDate('work_date', today())->first();
 
         if (!$attendance) {
@@ -35,12 +33,17 @@ class AttendanceController extends Controller
     public function clockIn()
     {
         $userId = Auth::id();
-        $today = today();
+        $today = today()->toDateString();
+        $already = Attendance::where('user_id', $userId)->whereDate('work_date', $today)->exists();
+
+        if ($already) {
+            abort(403);
+        }
 
         Attendance::create([
             'user_id' => $userId,
             'work_date' => $today,
-            'clock_in_at' => now(),
+            'clock_in_at' => now()->format('H:i:s'),
         ]);
 
         return redirect()->route('attendance.index');
@@ -93,7 +96,6 @@ class AttendanceController extends Controller
     public function clockOut()
     {
         $attendance = Attendance::where('user_id', auth()->id())->whereDate('work_date', today())->first();
-
         $onBreak = $attendance ? $attendance->breakTimes()->whereNull('break_out_at')->exists() : false;
 
         if (!$attendance || $attendance->clock_out_at || $onBreak) {
@@ -110,7 +112,6 @@ class AttendanceController extends Controller
     public function list(Request $request)
     {
         $user = $request->user();
-
         $monthParam = $request->query('month');
         if ($monthParam) {
             $currentMonth = Carbon::createFromFormat('Y-m', $monthParam)->startOfMonth();
@@ -134,7 +135,6 @@ class AttendanceController extends Controller
     public function show($id)
     {
         $loginUser = auth()->user();
-
         $query = Attendance::with(['user', 'breakTimes'])->where('id', $id);
 
         if (! $loginUser->is_admin) {

@@ -9,97 +9,92 @@ use Tests\TestCase;
 
 class StampCorrectionRequestTest extends TestCase
 {
-    use RefreshDatabase;
-    use TestHelpers;
+    use RefreshDatabase, TestHelpers;
 
     private string $pending = 'pending';
     private string $approved = 'approved';
+
+    private function makeRequest($user, $attendance, array $attrs = []): StampCorrectionRequest
+    {
+        return StampCorrectionRequest::create(array_merge([
+            'user_id' => $user->id,
+            'attendance_id' => $attendance->id,
+            'work_date' => $attendance->work_date,
+            'status' => $this->pending,
+            'remarks' => '申請',
+        ], $attrs));
+    }
+
+    private function list($user, string $tab)
+    {
+        return $this->actingAs($user)->get(route('stamp_correction_request.list', ['tab' => $tab]));
+    }
 
     public function test_store_creates_stamp_correction_request()
     {
         $user = $this->loginVerifiedUser();
         $attendance = $this->createBaseAttendance($user);
 
-        $response = $this->actingAs($user)->post(route('stamp_correction_request.store'), [
+        $this->actingAs($user)->post(route('stamp_correction_request.store'), [
             'work_date' => $attendance->work_date,
             'attendance_id' => $attendance->id,
             'clock_in_at' => '09:10',
             'clock_out_at' => '18:10',
-            'breaks' => [
-                ['id' => '', 'start' => '', 'end' => ''],
-            ],
+            'breaks' => [['id' => '', 'start' => '', 'end' => '']],
             'remarks' => '電車遅延のため',
-        ]);
-
-        $response->assertStatus(302);
+        ])->assertStatus(302);
 
         $this->assertDatabaseHas('stamp_correction_requests', [
             'user_id' => $user->id,
             'attendance_id' => $attendance->id,
             'work_date' => $attendance->work_date,
+            'clock_in_at' => '09:10:00',
+            'clock_out_at' => '18:10:00',
             'remarks' => '電車遅延のため',
+            'status' => $this->pending,
         ]);
     }
 
-    public function test_error_message_when_clock_in_is_after_clock_out()
+    public function test_clock_in_after_clock_out_is_invalid()
     {
         $user = $this->loginVerifiedUser();
         $attendance = $this->createBaseAttendance($user);
 
-        $response = $this->postCorrection($user, $attendance,[
-            'clock_in_at' => '19:00',
-            'clock_out_at' => '18:00',
-        ]);
-
-        $response->assertRedirect('/attendance/detail/' . $attendance->id);
-        $response->assertSessionHasErrors();
-        $this->followRedirects($response)->assertSee('出勤時間もしくは退勤時間が不適切な値です');
+        $response = $this->postCorrection($user, $attendance, ['clock_in_at' => '19:00', 'clock_out_at' => '18:00']);
+        $this->assertCorrectionValidationError($response, $attendance, '出勤時間もしくは退勤時間が不適切な値です');
     }
 
-    public function test_error_message_when_break_in_is_before_clock_in_or_after_clock_out()
+    public function test_break_in_after_clock_out_is_invalid()
     {
         $user = $this->loginVerifiedUser();
         $attendance = $this->createBaseAttendance($user);
 
         $response = $this->postCorrection($user, $attendance, [
-            'breaks' => [
-                ['id' => '', 'start' => '08:00', 'end' => '08:30'],
-            ],
+            'breaks' => [['id' => '', 'start' => '18:30', 'end' => '18:40']]
         ]);
 
-        $response->assertRedirect('/attendance/detail/' . $attendance->id);
-        $response->assertSessionHasErrors();
-        $this->followRedirects($response)->assertSee('休憩時間が不適切な値です');
+        $this->assertCorrectionValidationError($response, $attendance, '休憩時間が不適切な値です');
     }
 
-    public function test_error_message_when_break_out_is_after_clock_out()
+    public function test_break_out_after_clock_out_is_invalid()
     {
         $user = $this->loginVerifiedUser();
         $attendance = $this->createBaseAttendance($user);
 
         $response = $this->postCorrection($user, $attendance, [
-            'breaks' => [
-                ['id' => '', 'start' => '17:30', 'end' => '18:30'],
-            ],
+            'breaks' => [['id' => '', 'start' => '17:30', 'end' => '18:30']]
         ]);
 
-        $response->assertRedirect('/attendance/detail/' . $attendance->id);
-        $response->assertSessionHasErrors();
-        $this->followRedirects($response)->assertSee('休憩時間もしくは退勤時間が不適切な値です');
+        $this->assertCorrectionValidationError($response, $attendance, '休憩時間もしくは退勤時間が不適切な値です');
     }
 
-    public function test_error_message_when_remarks_is_missing()
+    public function test_remarks_is_required()
     {
         $user = $this->loginVerifiedUser();
         $attendance = $this->createBaseAttendance($user);
 
-        $response = $this->postCorrection($user, $attendance, [
-            'remarks' => '',
-        ]);
-
-        $response->assertRedirect('/attendance/detail/' . $attendance->id);
-        $response->assertSessionHasErrors('remarks');
-        $this->followRedirects($response)->assertSee('備考を記入してください');
+        $response = $this->postCorrection($user, $attendance, ['remarks' => '']);
+        $this->assertCorrectionValidationError($response, $attendance, '備考を記入してください', 'remarks');
     }
 
     public function test_pending_list_shows_all_own_requests()
@@ -108,88 +103,46 @@ class StampCorrectionRequestTest extends TestCase
         $attendance1 = $this->createBaseAttendance($user, '2026-02-01');
         $attendance2 = $this->createBaseAttendance($user, '2026-02-02');
 
-        StampCorrectionRequest::create([
-            'user_id' => $user->id,
-            'attendance_id' => $attendance1->id,
-            'work_date' => $attendance1->work_date,
-            'status' => $this->pending,
-            'remarks' => '申請A',
-        ]);
+        $this->makeRequest($user, $attendance1, ['remarks' => '申請A']);
+        $this->makeRequest($user, $attendance2, ['remarks' => '申請B']);
 
-        StampCorrectionRequest::create([
-            'user_id' => $user->id,
-            'attendance_id' => $attendance2->id,
-            'work_date' => $attendance2->work_date,
-            'status' => $this->pending,
-            'remarks' => '申請B',
-        ]);
-
-        $response = $this->actingAs($user)->get('/stamp_correction_request/list?tab=pending');
-        $response->assertOk();
-        $response->assertSee('申請A');
-        $response->assertSee('申請B');
+        $this->list($user, 'pending')->assertOk()->assertSee('申請A')->assertSee('申請B');
     }
 
-    public function test_approved_list_shows_approved_requests()
+    public function test_approved_tab_shows_request_after_admin_approves()
     {
-        $user = $this->loginVerifiedUser();
-        $attendance = $this->createBaseAttendance($user, '2026-02-02');
+        $user = $this->loginVerifiedUser(['name' => '一般ユーザー']);
+        $attendance = $this->createBaseAttendance($user);
+        $request = $this->makeRequest($user, $attendance, ['remarks' => '承認済みテスト']);
 
-        StampCorrectionRequest::create([
-            'user_id' => $user->id,
-            'attendance_id' => $attendance->id,
-            'work_date' => $attendance->work_date,
-            'status' => $this->approved,
-            'remarks' => '承認済み申請',
-        ]);
+        $admin = $this->loginVerifiedUser(['name' => '管理者', 'is_admin' => true]);
 
-        $response = $this->actingAs($user)->get('/stamp_correction_request/list?tab=approved');
-        $response->assertOk();
-        $response->assertSee('承認済み申請');
+        $this->actingAs($admin)->patch('stamp_correction_request/approve/' . $request->id)->assertStatus(302);
+
+        $this->assertDatabaseHas('stamp_correction_requests', ['id' => $request->id, 'status' => $this->approved]);
+        $this->list($user, 'approved')->assertOk()->assertSee('承認済みテスト');
     }
 
     public function test_request_detail_link_navigates_to_attendance_detail()
     {
         $user = $this->loginVerifiedUser();
         $attendance = $this->createBaseAttendance($user, '2026-02-02');
+        $request = $this->makeRequest($user, $attendance, ['remarks' => '詳細遷移テスト']);
 
-        StampCorrectionRequest::create([
-            'user_id' => $user->id,
-            'attendance_id' => $attendance->id,
-            'work_date' => $attendance->work_date,
-            'status' => $this->pending,
-            'remarks' => '詳細遷移テスト',
-        ]);
+        $list = $this->list($user, 'pending')->assertOk()->assertSee('詳細');
+        $list->assertSee('/stamp_correction_request/' . $request->id);
 
-        $list = $this->actingAs($user)->get('/stamp_correction_request/list?tab=pending');
-        $list->assertOk();
-        $list->assertSee('詳細');
-
-        $detail = $this->actingAs($user)->get('/attendance/detail/' . $attendance->id);
-        $detail->assertOk();
+        $this->actingAs($user)->get('/stamp_correction_request/' . $request->id)->assertOk();
     }
 
-    public function test_admin_can_see_pending_request_on_admin_list()
+    public function test_admin_can_see_request_on_approve_screen()
     {
         $user = $this->loginVerifiedUser(['name' => '一般ユーザー']);
         $attendance = $this->createBaseAttendance($user);
+        $request = $this->makeRequest($user, $attendance, ['remarks' => '管理者承認画面テスト']);
 
-        StampCorrectionRequest::create([
-            'user_id' => $user->id,
-            'attendance_id' => $attendance->id,
-            'work_date' => $attendance->work_date,
-            'status' => $this->pending,
-            'remarks' => '管理者確認用',
-        ]);
+        $admin = $this->loginVerifiedUser(['name' => '管理者', 'is_admin' => true]);
 
-        $admin = $this->loginVerifiedUser([
-            'name' => '管理者',
-            'is_admin' => true,
-        ]);
-
-        $response = $this->actingAs($admin)->get('/stamp_correction_request/list?tab=pending');
-        $response->assertOk();
-        $response->assertSee('管理者確認用');
-        $response->assertSee('一般ユーザー');
+        $this->actingAs($admin)->get('stamp_correction_request/approve/' . $request->id)->assertOk()->assertSee('管理者承認画面テスト')->assertSee('一般ユーザー');
     }
 }

@@ -12,6 +12,12 @@ class ClockInTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     public function test_clock_in_button_is_visible_when_status_is_off()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
@@ -24,8 +30,6 @@ class ClockInTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
         $response->assertSee('出勤');
-
-        Carbon::setTestNow();
     }
 
     public function test_clock_in_creates_attendance_and_status_becomes_working()
@@ -45,8 +49,6 @@ class ClockInTest extends TestCase
         ]);
 
         $this->actingAs($user)->get('/attendance')->assertOk()->assertSee('出勤中');
-
-        Carbon::setTestNow();
     }
 
     public function test_user_cannot_clock_in_twice_in_a_day()
@@ -67,9 +69,9 @@ class ClockInTest extends TestCase
 
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
-        $response->assertDontSee('>出勤<', false);
+        $response->assertDontSee('/attendance/clock-in', false);
 
-        Carbon::setTestNow();
+        $this->actingAs($user)->post('/attendance/clock-in')->assertStatus(403);
     }
 
     public function test_clock_in_time_is_visible_on_attendance_list()
@@ -81,17 +83,11 @@ class ClockInTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        Attendance::create([
-            'user_id' => $user->id,
-            'work_date' => $fixedNow->toDateString(),
-            'clock_in_at' => '09:00',
-            'clock_out_at' => null,
-        ]);
+        $this->actingAs($user)->post('/attendance/clock-in')->assertRedirect('/attendance');
 
         $response = $this->actingAs($user)->get('/attendance/list');
         $response->assertOk();
-        $response->assertSee('09:00');
+        $response->assertSee($fixedNow->format('H:i'));
 
-        Carbon::setTestNow();
     }
 }

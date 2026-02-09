@@ -12,6 +12,12 @@ class ClockOutTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     private function loginVerifiedUser(): User
     {
         return User::factory()->create([
@@ -47,8 +53,6 @@ class ClockOutTest extends TestCase
         $this->assertSame($fixedNow->format('H:i:s'), $attendance->clock_out_at);
 
         $this->actingAs($user)->get('/attendance')->assertOk()->assertSee('退勤済')->assertSee('お疲れ様でした。');
-
-        Carbon::setTestNow();
     }
 
     public function test_clock_out_time_is_visible_on_attendance_list()
@@ -58,17 +62,11 @@ class ClockOutTest extends TestCase
 
         $user = $this->loginVerifiedUser();
 
-        Attendance::create([
-            'user_id' => $user->id,
-            'work_date' => $fixedNow->toDateString(),
-            'clock_in_at' => '09:00',
-            'clock_out_at' => $fixedNow->format('H:i:s'),
-        ]);
+        $this->actingAs($user)->post('/attendance/clock-in')->assertRedirect('/attendance');
+        $this->actingAs($user)->post('/attendance/clock-out')->assertRedirect('/attendance');
 
         $response = $this->actingAs($user)->get('/attendance/list');
         $response->assertOk();
         $response->assertSee('18:05');
-
-        Carbon::setTestNow();
     }
 }

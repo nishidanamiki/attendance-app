@@ -12,6 +12,12 @@ class AttendanceListTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     private function loginVerifiedUser(): User
     {
         return User::factory()->create([
@@ -19,8 +25,7 @@ class AttendanceListTest extends TestCase
         ]);
     }
 
-    // 自分が行った勤怠情報が全て表示されている
-    public function test_user_sees_only_own_attendances_on_list()
+    public function test_attendance_list_shows_all_of_my_attendances_in_month()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
         Carbon::setTestNow($fixedNow);
@@ -53,47 +58,31 @@ class AttendanceListTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance/list');
         $response->assertOk();
 
+        $response->assertSee('02/02');
         $response->assertSee('08:02');
+        $response->assertSee('17:02');
+
+        $response->assertSee('02/03');
         $response->assertSee('08:03');
+        $response->assertSee('17:03');
 
         $response->assertDontSee('06:59');
-
-        Carbon::setTestNow();
+        $response->assertDontSee('19:59');
     }
 
-    // 勤怠一覧画面に遷移した際に現在の月が表示される
-    public function test_attendance_list_shows_current_month_by_default()
+    public function test_attendance_list_shows_current_month_on_first_visit()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
         Carbon::setTestNow($fixedNow);
 
         $user = $this->loginVerifiedUser();
 
-        Attendance::create([
-            'user_id' => $user->id,
-            'work_date' => '2026-01-20',
-            'clock_in_at' => '07:01:00',
-            'clock_out_at' => '16:01:00',
-        ]);
-
-        Attendance::create([
-            'user_id' => $user->id,
-            'work_date' => '2026-02-02',
-            'clock_in_at' => '08:02:00',
-            'clock_out_at' => '17:02:00',
-        ]);
-
         $response = $this->actingAs($user)->get('/attendance/list');
         $response->assertOk();
-
-        $response->assertSee('08:02');
-        $response->assertDontSee('07:01');
-
-        Carbon::setTestNow();
+        $response->assertSee('2026/02');
     }
 
-    // 「前月」を押下した時に表示月の前月の情報が表示される
-    public function test_previous_month_is_displayed_when_month_query_is_previous()
+    public function test_prev_month_is_shows_previous_month_attendance()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
         Carbon::setTestNow($fixedNow);
@@ -117,14 +106,16 @@ class AttendanceListTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance/list?month=2026-01');
         $response->assertOk();
 
+        $response->assertSee('01/20');
         $response->assertSee('07:01');
-        $response->assertDontSee('08:02');
+        $response->assertSee('16:01');
 
-        Carbon::setTestNow();
+        $response->assertDontSee('02/02');
+        $response->assertDontSee('08:02');
+        $response->assertDontSee('17:02');
     }
 
-    // 「翌月」を押下した時に表示月の前月の情報が表示される
-    public function test_next_month_is_displayed_when_month_query_is_next()
+    public function test_next_month_shows_next_month_attendances()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
         Carbon::setTestNow($fixedNow);
@@ -148,14 +139,16 @@ class AttendanceListTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance/list?month=2026-03');
         $response->assertOk();
 
+        $response->assertSee('03/05');
         $response->assertSee('09:03');
-        $response->assertDontSee('08:02');
+        $response->assertSee('18:03');
 
-        Carbon::setTestNow();
+        $response->assertDontSee('02/02');
+        $response->assertDontSee('08:02');
+        $response->assertDontSee('17:02');
     }
 
-    // 「詳細」を押下すると、その日の勤怠詳細画面に遷移する
-    public function test_detail_link_navigates_to_attendance_detail()
+    public function test_click_detail_navigates_to_attendance_detail_page()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
         Carbon::setTestNow($fixedNow);
@@ -166,17 +159,18 @@ class AttendanceListTest extends TestCase
             'user_id' => $user->id,
             'work_date' => '2026-02-02',
             'clock_in_at' => '08:02:00',
-            'clock_out_At' => '17:02:00',
+            'clock_out_at' => '17:02:00',
         ]);
 
         $list = $this->actingAs($user)->get('/attendance/list');
         $list->assertOk();
 
-        $list->assertSee('詳細');
+        $list->assertSee(route('attendance.detail', ['id' => $attendance->id]), false);
 
         $detail = $this->actingAs($user)->get('/attendance/detail/' . $attendance->id);
         $detail->assertOk();
 
-        Carbon::setTestNow();
+        $detail->assertSee('08:02');
+        $detail->assertSee('17:02');
     }
 }

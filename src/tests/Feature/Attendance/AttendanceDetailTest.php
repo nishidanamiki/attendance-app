@@ -13,6 +13,12 @@ class AttendanceDetailTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     private function loginVerifiedUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge([
@@ -39,8 +45,6 @@ class AttendanceDetailTest extends TestCase
         $response->assertOk();
 
         $response->assertSee('山田太郎');
-
-        Carbon::setTestNow();
     }
 
     public function test_detail_shows_selected_date()
@@ -60,14 +64,11 @@ class AttendanceDetailTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance/detail/' . $attendance->id);
         $response->assertOk();
 
-        $response->assertSee('2026');
-        $response->assertSee('02');
-        $response->assertSee('02');
-
-        Carbon::setTestNow();
+        $response->assertSee('2026年');
+        $response->assertSee('2月2日');
     }
 
-    public function test_detail_shows_clock_in_and_not_times_match_records()
+    public function test_detail_shows_clock_in_and_out_times_match_records()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
         Carbon::setTestNow($fixedNow);
@@ -86,8 +87,6 @@ class AttendanceDetailTest extends TestCase
 
         $response->assertSee('09:01');
         $response->assertSee('18:02');
-
-        Carbon::setTestNow();
     }
 
     public function test_detail_shows_break_times_match_records()
@@ -115,7 +114,5 @@ class AttendanceDetailTest extends TestCase
 
         $response->assertSee('12:10');
         $response->assertSee('12:40');
-
-        Carbon::setTestNow();
     }
 }

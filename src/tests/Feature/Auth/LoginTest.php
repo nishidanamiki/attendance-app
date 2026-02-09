@@ -47,6 +47,7 @@ class LoginTest extends TestCase
         ]);
 
         $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('email');
         $this->followRedirects($response)->assertSee('ログイン情報が登録されていません');
     }
 }

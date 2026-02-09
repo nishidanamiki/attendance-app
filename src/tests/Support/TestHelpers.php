@@ -45,4 +45,11 @@ trait TestHelpers
             ->actingAs($user)
             ->post(route('stamp_correction_request.store'), $payload);
     }
+
+    protected function assertCorrectionValidationError(TestResponse $response, Attendance $attendance, string $message, ?string $field = null): void
+    {
+        $response->assertRedirect('/attendance/detail/' . $attendance->id);
+        $field ? $response->assertSessionHasErrors($field) : $response->assertSessionHasErrors();
+        $this->followRedirects($response)->assertSee($message);
+    }
 }

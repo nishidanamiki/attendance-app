@@ -13,6 +13,12 @@ class BreakTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     private function loginVerifiedUser(): User
     {
         return User::factory()->create([
@@ -41,8 +47,6 @@ class BreakTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
         $response->assertSee('>休憩入<', false);
-
-        Carbon::setTestNow();
     }
 
     public function test_break_in_creates_break_time_and_status_becomes_break()
@@ -62,8 +66,6 @@ class BreakTest extends TestCase
         ]);
 
         $this->actingAs($user)->get('/attendance')->assertOk()->assertSee('休憩中');
-
-        Carbon::setTestNow();
     }
 
     public function test_break_out_button_works_and_status_becomes_working()
@@ -89,8 +91,6 @@ class BreakTest extends TestCase
         $this->assertNotNull($break->break_out_at);
 
         $this->actingAs($user)->get('/attendance')->assertOk()->assertSee('出勤中');
-
-        Carbon::setTestNow();
     }
 
     public function test_user_can_take_breaks_multiple_times_in_a_day()
@@ -112,7 +112,33 @@ class BreakTest extends TestCase
             2,
             BreakTime::where('attendance_id', $attendance->id)->count()
         );
+        $this->actingAs($user)->get('/attendance')->assertOk()->assertSee('>休憩戻<', false);
+    }
 
-        Carbon::setTestNow();
+    public function test_break_and_work_duration_are_visible_on_attendance_list()
+    {
+        $fixedNow = Carbon::create(2026, 2, 4, 18, 0, 0, 'Asia/Tokyo');
+        Carbon::setTestNow($fixedNow);
+
+        $user = $this->loginVerifiedUser();
+
+        $attendance = Attendance::create([
+            'user_id' => $user->id,
+            'work_date' => '2026-02-04',
+            'clock_in_at' => '09:00',
+            'clock_out_at' => '18:00',
+        ]);
+
+        BreakTime::create([
+            'attendance_id' => $attendance->id,
+            'break_in_at' => '12:00',
+            'break_out_at' => '13:00',
+        ]);
+
+        $response = $this->actingAs($user)->get('/attendance/list');
+        $response->assertOk();
+
+        $response->assertSee('1:00');
+        $response->assertSee('8:00');
     }
 }

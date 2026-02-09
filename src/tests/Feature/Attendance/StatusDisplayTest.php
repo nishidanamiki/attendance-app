@@ -13,6 +13,12 @@ class StatusDisplayTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     public function test_status_is_off_when_user_has_no_attendance_today()
     {
         $fixedNow = Carbon::create(2026, 2, 4, 10, 15, 0, 'Asia/Tokyo');
@@ -25,8 +31,9 @@ class StatusDisplayTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
         $response->assertSee('勤務外');
-
-        Carbon::setTestNow();
+        $response->assertDontSee('出勤中');
+        $response->assertDontSee('休憩中');
+        $response->assertDontSee('退勤済');
     }
 
     public function test_status_is_working_when_user_clocked_in_and_not_on_break()
@@ -48,8 +55,9 @@ class StatusDisplayTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
         $response->assertSee('出勤中');
-
-        Carbon::setTestNow();
+        $response->assertDontSee('勤務外');
+        $response->assertDontSee('休憩中');
+        $response->assertDontSee('退勤済');
     }
 
     public function test_status_is_break_when_user_is_on_break()
@@ -77,8 +85,9 @@ class StatusDisplayTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
         $response->assertSee('休憩中');
-
-        Carbon::setTestNow();
+        $response->assertDontSee('勤務外');
+        $response->assertDontSee('出勤中');
+        $response->assertDontSee('退勤済');
     }
 
     public function test_status_is_done_when_user_clocked_out()
@@ -100,7 +109,8 @@ class StatusDisplayTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
         $response->assertSee('退勤済');
-
-        Carbon::setTestNow();
+        $response->assertDontSee('勤務外');
+        $response->assertDontSee('出勤中');
+        $response->assertDontSee('休憩中');
     }
 }
