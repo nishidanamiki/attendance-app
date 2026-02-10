@@ -37,17 +37,20 @@ class StampCorrectionRequestController extends Controller
     {
         $validated = $request->validated();
 
+        if (auth()->user()->is_admin) abort(403);
+
         $attendanceId = $validated['attendance_id'] ?? null;
         $workDate = $validated['work_date'] ?? null;
 
-        if (!$attendanceId) {
-            $attendance = Attendance::firstOrCreate(
-                [
-                    'user_id' => auth()->id(),
-                    'work_date' => $workDate,
-                ],
-            );
+        if ($attendanceId) {
+            Attendance::where('id', $attendanceId)->where('user_id', auth()->id())->firstOrFail();
+        }
 
+        if (!$attendanceId) {
+            $attendance = Attendance::firstOrCreate([
+                'user_id' => auth()->id(),
+                'work_date' => $workDate,
+            ]);
             $attendanceId = $attendance->id;
         }
 

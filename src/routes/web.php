@@ -59,6 +59,8 @@ Route::middleware('auth', 'verified')->group(function () {
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/attendance/list', [AdminAttendanceController::class, 'index'])->name('attendance.list');
+    Route::get('/attendance/detail', [AdminAttendanceController::class, 'detail'])->name('attendance.detail');
+    Route::post('/attendance/save', [AdminAttendanceController::class, 'save'])->name('attendance.save');
     Route::get('/attendance/{id}', [AdminAttendanceController::class, 'show'])->name('attendance.show');
     Route::patch('/attendance/{id}', [AdminAttendanceController::class, 'update'])->name('attendance.update');
     Route::get('/staff/list', [AdminStaffController::class, 'index'])->name('staff.list');

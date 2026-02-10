@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminUpdateAttendanceRequest;
+use App\Models\User;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -72,6 +73,105 @@ class AdminAttendanceController extends Controller
         $userForDisplay = $attendance->user;
 
         return view('admin.attendance.detail', compact('attendance', 'date', 'displayClockIn', 'displayClockOut', 'breakTimesForForm', 'pendingRequest', 'userForDisplay'));
+    }
+
+    public function detail(Request $request)
+    {
+        $date = $request->query('date');
+        $userId = $request->query('user_id');
+
+        abort_unless(auth()->user()->is_admin, 403);
+
+        $targetUser = User::where('id', $userId)->where('is_admin', 0)->firstOrFail();
+        $userForDisplay = $targetUser;
+
+        $attendance = Attendance::with(['user', 'breakTimes', 'stampCorrectionRequests.breakTimes'])->where('user_id', $targetUser)->whereDate('work_date', $date)->first();
+
+        $pendingRequest = null;
+        if ($attendance) {
+            $pendingRequest = $attendance->stampCorrectionRequests()->where('status', 'pending')->latest()->first();
+        }
+
+        if ($pendingRequest) {
+            $displayClockIn = $pendingRequest->clock_in_at ?? $attendance->clock_in_at;
+            $displayClockOut = $pendingRequest->clock_out_at ?? $attendance->clock_out_at;
+            $breakTimesForForm = $pendingRequest->breakTimes->sortBy('break_in_at')->values();
+        } else {
+            $displayClockIn = $attendance?->clock_in_at;
+            $displayClockOut = $attendance?->clock_out_at;
+
+            $breakTimes = $attendance ? $attendance->breakTimes->sortBy('break_in_at')->values() : collect();
+            $breakTimesForForm = $breakTimes->push(null);
+        }
+
+        if (!$attendance) {
+            $attendance = new Attendance([
+                'user_id' => $targetUser->id,
+                'work_date' => $date,
+            ]);
+            $attendance->setRelation('user', $targetUser);
+        }
+
+        return view('admin.attendance.detail', compact(
+            'attendance',
+            'date',
+            'displayClockIn',
+            'displayClockOut',
+            'breakTimesForForm',
+            'pendingRequest',
+            'userForDisplay'
+        ));
+    }
+
+    public function save(AdminUpdateAttendanceRequest $request)
+    {
+        $date = $request->validated();
+
+        User::where('id', $date['user_id'])->where('is_admin', 0)->firstOrFail();
+
+        $attendance = Attendance::with('breakTimes')->firstOrCreate(
+            [
+                'user_id' => $date['user_id'],
+                'work_date' => $date['work_date'],
+            ]
+        );
+
+        $attendance->clock_in_at = $date['clock_in_at'] ?? null;
+        $attendance->clock_out_at = $date['clock_out_at'] ?? null;
+        $attendance->remarks = $date['remarks'];
+        $attendance->save();
+
+        $breakInput = $data['breaks'] ?? [];
+
+        foreach ($breakInput as $input) {
+            $start = $input['start'] ?? null;
+            $end = $input['end'] ?? null;
+
+            if (!empty($input['id'])) {
+                $break = $attendance->breakTimes()->where('id', $input['id'])->first();
+                if ($break) {
+                    if ($start === null && $end === null) {
+                        $break->delete();
+                    } else {
+                        $break->break_in_at = $start;
+                        $break->break_out_at = $end;
+                        $break->save();
+                    }
+                }
+                continue;
+            }
+            if ($start !== null && $end !== null) {
+                $attendance->breakTimes()->create([
+                    'break_in_at' => $start,
+                    'break_out_at' => $end,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.attendance.detail', [
+            'date' => $attendance->work_date,
+            'user_id' => $attendance->user_id,
+        ]);
     }
 
     public function update(AdminUpdateAttendanceRequest $request, $id)

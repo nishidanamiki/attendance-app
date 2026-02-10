@@ -1,6 +1,6 @@
 @php
     $displayDate = $displayDate ?? ($date ?? ($attendance->work_date ?? null));
-    $userForDisplay = $userForDisplay ?? ($attendance->user ?? auth()->user());
+    $userForDisplay = $userForDisplay ?? ($attendance->user ?? (auth()->user()->is_admin ? null : auth()->user()));
     $clockInValue = old('clock_in_at', $displayClockIn ? substr($displayClockIn, 0, 5) : '');
     $clockOutValue = old('clock_out_at', $displayClockOut ? substr($displayClockOut, 0, 5) : '');
 @endphp
@@ -10,7 +10,7 @@
         <th>名前</th>
         <td>
             <div class="cols3">
-                <span class="value-box value-box--name">{{ $userForDisplay->name }}</span>
+                <span class="value-box value-box--name">{{ $userForDisplay->name ?? '(ユーザー不明)' }}</span>
             </div>
         </td>
     </tr>

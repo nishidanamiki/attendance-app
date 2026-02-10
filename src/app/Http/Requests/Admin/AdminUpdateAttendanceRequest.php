@@ -11,6 +11,12 @@ class AdminUpdateAttendanceRequest extends StoreStampCorrectionRequest
      */
     public function authorize(): bool
     {
+        logger()->info('AdminUpdateAttendanceRequest authorize', [
+            'auth' => auth()->check(),
+            'user_id' => auth()->user()?->id,
+            'is_admin' => auth()->user()?->is_admin,
+            'path' => request()->path(),
+        ]);
         return auth()->check() && auth()->user()->is_admin;
     }
 
@@ -23,7 +29,9 @@ class AdminUpdateAttendanceRequest extends StoreStampCorrectionRequest
     {
         $rules = parent::rules();
 
-        unset($rules['attendance_id'], $rules['work_date']);
+        unset($rules['attendance_id']);
+
+        $rules['user_id'] = ['required', 'exists:users,id'];
 
         return $rules;
     }

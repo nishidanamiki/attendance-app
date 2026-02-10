@@ -12,7 +12,7 @@
 
         <section class="register-form">
             <h2 class="visually-hidden">会員登録フォーム</h2>
-            <form action="" method="POST" novalidate>
+            <form action="{{ route('register') }}" method="POST" novalidate>
                 @csrf
                 <div class="form-group">
                     <label for="name">名前</label>

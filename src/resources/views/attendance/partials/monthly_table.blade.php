@@ -65,7 +65,7 @@
                 @else
                     @if ($isAdmin)
                         <a
-                            href="{{ route('attendance.openByDate', [
+                            href="{{ route('admin.attendance.detail', [
                                 'date' => $dateKey,
                                 'user_id' => $targetUser->id,
                             ]) }}">詳細</a>

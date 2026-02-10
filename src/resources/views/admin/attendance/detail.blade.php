@@ -9,11 +9,10 @@
 @section('content')
     <div class="detail-container">
         <h1 class="page-title">勤怠詳細</h1>
-        <form action="{{ route('admin.attendance.update', $attendance->id) }}" method="POST" novalidate>
+        <form action="{{ route('admin.attendance.save') }}" method="POST" novalidate>
             @csrf
-            @method('PATCH')
-            <input type="hidden" name="attendance_id" value="{{ $attendance->id }}">
-            <input type="hidden" name="work_date" value="{{ $date ?? $attendance->work_date }}">
+            <input type="hidden" name="user_id" value="{{ request('user_id') ?? $attendance->user_id }}">
+            <input type="hidden" name="work_date" value="{{ request('date') ?? ($date ?? $attendance->work_date) }}">
             @if ($pendingRequest)
                 @include('attendance.partials.detail_table_text')
             @else
