@@ -39,10 +39,10 @@
                 <tr>
                     <td>{{ $attendance->user->name }}</td>
                     <td>
-                        {{ $attendance->clock_in_at ? \Illuminate\Support\Str::of($attendance->clock_in_at)->limit(5, '') : '-' }}
+                        {{ $attendance->clock_in_at ? \Illuminate\Support\Str::of($attendance->clock_in_at)->limit(5, '') : '' }}
                     </td>
                     <td>
-                        {{ $attendance->clock_out_at ? \Illuminate\Support\Str::of($attendance->clock_out_at)->limit(5, '') : '-' }}
+                        {{ $attendance->clock_out_at ? \Illuminate\Support\Str::of($attendance->clock_out_at)->limit(5, '') : '' }}
                     </td>
                     <td>{{ minutes_to_hm($attendance->break_minutes) }}</td>
                     <td>{{ minutes_to_hm($attendance->net_minutes) }}</td>

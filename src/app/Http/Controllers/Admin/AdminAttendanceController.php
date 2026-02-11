@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\AdminUpdateAttendanceRequest;
 use App\Models\User;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AdminAttendanceController extends Controller
@@ -123,95 +124,146 @@ class AdminAttendanceController extends Controller
         ));
     }
 
-    public function save(AdminUpdateAttendanceRequest $request)
-    {
-        $date = $request->validated();
-
-        User::where('id', $date['user_id'])->where('is_admin', 0)->firstOrFail();
-
-        $attendance = Attendance::with('breakTimes')->firstOrCreate(
-            [
-                'user_id' => $date['user_id'],
-                'work_date' => $date['work_date'],
-            ]
-        );
-
-        $attendance->clock_in_at = $date['clock_in_at'] ?? null;
-        $attendance->clock_out_at = $date['clock_out_at'] ?? null;
-        $attendance->remarks = $date['remarks'];
-        $attendance->save();
-
-        $breakInput = $data['breaks'] ?? [];
-
-        foreach ($breakInput as $input) {
-            $start = $input['start'] ?? null;
-            $end = $input['end'] ?? null;
-
-            if (!empty($input['id'])) {
-                $break = $attendance->breakTimes()->where('id', $input['id'])->first();
-                if ($break) {
-                    if ($start === null && $end === null) {
-                        $break->delete();
-                    } else {
-                        $break->break_in_at = $start;
-                        $break->break_out_at = $end;
-                        $break->save();
-                    }
-                }
-                continue;
-            }
-            if ($start !== null && $end !== null) {
-                $attendance->breakTimes()->create([
-                    'break_in_at' => $start,
-                    'break_out_at' => $end,
-                ]);
-            }
-        }
-
-        return redirect()->route('admin.attendance.detail', [
-            'date' => $attendance->work_date,
-            'user_id' => $attendance->user_id,
-        ]);
-    }
-
-    public function update(AdminUpdateAttendanceRequest $request, $id)
+    public function upsert(AdminUpdateAttendanceRequest $request)
     {
         $data = $request->validated();
 
-        $attendance = Attendance::with('breakTimes')->findOrFail($id);
+        return DB::transaction(function () use ($data) {
+            $attendance = Attendance::firstOrCreate([
+                'user_id' => $data['user_id'],
+                'work_date' => $data['work_date'],
+            ]);
 
-        $attendance->clock_in_at = $data['clock_in_at'] ?? null;
-        $attendance->clock_out_at = $data['clock_out_at'] ?? null;
-        $attendance->remarks = $data['remarks'];
-        $attendance->save();
+            $pendingExists = $attendance->stampCorrectionRequests()->where('status', 'pending')->exists();
 
-        $breakInput = $data['breaks'] ?? [];
+            if ($pendingExists) {
+                    abort(403);
+            }
 
-        foreach ($breakInput as $input) {
+            $attendance->clock_in_at = $data['clock_in_at'] ?? null;
+            $attendance->clock_out_at = $data['clock_out_at'] ?? null;
+            $attendance->remarks = $data['remarks'];
+            $attendance->save();
 
-            $start = $input['start'] ?? null;
-            $end = $input['end'] ?? null;
+            $breaks = collect($data['breaks'] ?? [])->map(function ($break) {
+                $start = $break['start'] ?? null;
+                $end = $break['end'] ?? null;
 
-                if (!empty($input['id'])) {
-                    $break = $attendance->breakTimes()->where('id', $input['id'])->first();
-                    if ($break) {
-                        if ($start === null && $end === null) {
-                            $break->delete();
-                        } else {
-                            $break->break_in_at = $start;
-                            $break->break_out_at = $end;
-                            $break->save();
-                        }
-                    }
-                    continue;
-                }
-                if ($start !== null && $end !== null) {
-                    $attendance->breakTimes()->create([
+                $start = ($start === '') ? null : $start;
+                $end = ($end === '') ? null : $end;
+
+                return [
                     'break_in_at' => $start,
                     'break_out_at' => $end,
-                ]);
+                ];
+            })
+            ->filter(function ($break) {
+                $hasBreakStart = !empty($break['break_in_at']);
+                $hasBreakEnd = !empty($break['break_out_at']);
+                return $hasBreakStart && $hasBreakEnd;
+            })->values()->all();
+
+            $attendance->breakTimes()->delete();
+            if (!empty($breaks)) {
+                $attendance->breakTimes()->createMany($breaks);
             }
-        }
-        return redirect()->route('admin.attendance.show', $attendance->id);
+
+            return redirect()->route('admin.attendance.detail', [
+                'date' => $attendance->work_date,
+                'user_id' => $attendance->user_id,
+            ]);
+        });
     }
+
+    // public function save(AdminUpdateAttendanceRequest $request)
+    // {
+    //     $data = $request->validated();
+
+    //     User::where('id', $data['user_id'])->where('is_admin', 0)->firstOrFail();
+
+    //     $attendance = Attendance::with('breakTimes')->firstOrCreate(
+    //         [
+    //             'user_id' => $data['user_id'],
+    //             'work_date' => $data['work_date'],
+    //         ]
+    //     );
+
+    //     $attendance->clock_in_at = $data['clock_in_at'] ?? null;
+    //     $attendance->clock_out_at = $data['clock_out_at'] ?? null;
+    //     $attendance->remarks = $data['remarks'];
+    //     $attendance->save();
+
+    //     $breakInput = $data['breaks'] ?? [];
+
+    //     foreach ($breakInput as $input) {
+    //         $start = $input['start'] ?? null;
+    //         $end = $input['end'] ?? null;
+
+    //         if (!empty($input['id'])) {
+    //             $break = $attendance->breakTimes()->where('id', $input['id'])->first();
+    //             if ($break) {
+    //                 if ($start === null && $end === null) {
+    //                     $break->delete();
+    //                 } else {
+    //                     $break->break_in_at = $start;
+    //                     $break->break_out_at = $end;
+    //                     $break->save();
+    //                 }
+    //             }
+    //             continue;
+    //         }
+    //         if ($start !== null && $end !== null) {
+    //             $attendance->breakTimes()->create([
+    //                 'break_in_at' => $start,
+    //                 'break_out_at' => $end,
+    //             ]);
+    //         }
+    //     }
+
+    //     return redirect()->route('admin.attendance.detail', [
+    //         'date' => $attendance->work_date,
+    //         'user_id' => $attendance->user_id,
+    //     ]);
+    // }
+
+    // public function update(AdminUpdateAttendanceRequest $request, $id)
+    // {
+    //     $data = $request->validated();
+
+    //     $attendance = Attendance::with('breakTimes')->findOrFail($id);
+
+    //     $attendance->clock_in_at = $data['clock_in_at'] ?? null;
+    //     $attendance->clock_out_at = $data['clock_out_at'] ?? null;
+    //     $attendance->remarks = $data['remarks'];
+    //     $attendance->save();
+
+    //     $breakInput = $data['breaks'] ?? [];
+
+    //     foreach ($breakInput as $input) {
+
+    //         $start = $input['start'] ?? null;
+    //         $end = $input['end'] ?? null;
+
+    //             if (!empty($input['id'])) {
+    //                 $break = $attendance->breakTimes()->where('id', $input['id'])->first();
+    //                 if ($break) {
+    //                     if ($start === null && $end === null) {
+    //                         $break->delete();
+    //                     } else {
+    //                         $break->break_in_at = $start;
+    //                         $break->break_out_at = $end;
+    //                         $break->save();
+    //                     }
+    //                 }
+    //                 continue;
+    //             }
+    //             if ($start !== null && $end !== null) {
+    //                 $attendance->breakTimes()->create([
+    //                 'break_in_at' => $start,
+    //                 'break_out_at' => $end,
+    //             ]);
+    //         }
+    //     }
+    //     return redirect()->route('admin.attendance.show', $attendance->id);
+    // }
 }

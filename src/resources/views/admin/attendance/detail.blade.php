@@ -9,10 +9,10 @@
 @section('content')
     <div class="detail-container">
         <h1 class="page-title">勤怠詳細</h1>
-        <form action="{{ route('admin.attendance.save') }}" method="POST" novalidate>
+        <form action="{{ route('admin.attendance.upsert') }}" method="POST" novalidate>
             @csrf
-            <input type="hidden" name="user_id" value="{{ request('user_id') ?? $attendance->user_id }}">
-            <input type="hidden" name="work_date" value="{{ request('date') ?? ($date ?? $attendance->work_date) }}">
+            <input type="hidden" name="user_id" value="{{ request('user_id') }}">
+            <input type="hidden" name="work_date" value="{{ request('date') }}">
             @if ($pendingRequest)
                 @include('attendance.partials.detail_table_text')
             @else
