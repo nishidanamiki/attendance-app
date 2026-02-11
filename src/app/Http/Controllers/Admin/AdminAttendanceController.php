@@ -85,7 +85,7 @@ class AdminAttendanceController extends Controller
         $targetUser = User::where('id', $userId)->where('is_admin', 0)->firstOrFail();
         $userForDisplay = $targetUser;
 
-        $attendance = Attendance::with(['user', 'breakTimes', 'stampCorrectionRequests.breakTimes'])->where('user_id', $targetUser)->whereDate('work_date', $date)->first();
+        $attendance = Attendance::with(['user', 'breakTimes', 'stampCorrectionRequests.breakTimes'])->where('user_id', $targetUser->id)->whereDate('work_date', $date)->first();
 
         $pendingRequest = null;
         if ($attendance) {
