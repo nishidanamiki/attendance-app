@@ -129,15 +129,13 @@ class AdminAttendanceController extends Controller
         $data = $request->validated();
 
         return DB::transaction(function () use ($data) {
-            $attendance = Attendance::firstOrCreate([
+            $attendance = Attendance::with('breakTimes')->firstOrCreate([
                 'user_id' => $data['user_id'],
                 'work_date' => $data['work_date'],
             ]);
 
-            $pendingExists = $attendance->stampCorrectionRequests()->where('status', 'pending')->exists();
-
-            if ($pendingExists) {
-                    abort(403);
+            if ($attendance->stampCorrectionRequests()->where('status', 'pending')->exists()) {
+                abort(403);
             }
 
             $attendance->clock_in_at = $data['clock_in_at'] ?? null;
@@ -145,27 +143,34 @@ class AdminAttendanceController extends Controller
             $attendance->remarks = $data['remarks'];
             $attendance->save();
 
-            $breaks = collect($data['breaks'] ?? [])->map(function ($break) {
-                $start = $break['start'] ?? null;
-                $end = $break['end'] ?? null;
+            $breakInput = $data['breaks'] ?? [];
 
-                $start = ($start === '') ? null : $start;
-                $end = ($end === '') ? null : $end;
+            foreach ($breakInput as $input) {
+                $start = $input['start'] ?? null;
+                $end = $input['end'] ?? null;
+                $id = $input['id'] ?? null;
 
-                return [
-                    'break_in_at' => $start,
-                    'break_out_at' => $end,
-                ];
-            })
-            ->filter(function ($break) {
-                $hasBreakStart = !empty($break['break_in_at']);
-                $hasBreakEnd = !empty($break['break_out_at']);
-                return $hasBreakStart && $hasBreakEnd;
-            })->values()->all();
+                if (!empty($id)) {
+                    $break = $attendance->breakTimes()->where('id', $id)->first();
 
-            $attendance->breakTimes()->delete();
-            if (!empty($breaks)) {
-                $attendance->breakTimes()->createMany($breaks);
+                    if ($break) {
+                        if ($start === null && $end === null) {
+                            $break->delete();
+                        } else {
+                            $break->break_in_at = $start;
+                            $break->break_out_at = $end;
+                            $break->save();
+                        }
+                    }
+                    continue;
+                }
+
+                if ($start !== null && $end !== null) {
+                    $attendance->breakTimes()->create([
+                        'break_in_at' => $start,
+                        'break_out_at' => $end,
+                    ]);
+                }
             }
 
             return redirect()->route('admin.attendance.detail', [
