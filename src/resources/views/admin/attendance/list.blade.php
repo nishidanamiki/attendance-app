@@ -4,6 +4,7 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/admin/attendance/list.css') }}">
+@endsection
 
 @section('content')
     <div class="list-container">
@@ -17,14 +18,7 @@
             <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}">翌日 <span class="light-gray">→</span></a>
         </div>
         @php
-            if (!function_exists('minutes_to_hm')) {
-                function minutes_to_hm($minutes)
-                {
-                    $hours = intdiv($minutes, 60);
-                    $mins = $minutes % 60;
-                    return sprintf('%d:%02d', $hours, $mins);
-                }
-            }
+            $hm = fn($m) => sprintf('%d:%02d', intdiv($m, 60), $m % 60);
         @endphp
         <table class="attendees-table">
             <tr>
@@ -39,13 +33,13 @@
                 <tr>
                     <td>{{ $attendance->user->name }}</td>
                     <td>
-                        {{ $attendance->clock_in_at ? \Illuminate\Support\Str::of($attendance->clock_in_at)->limit(5, '') : '' }}
+                        {{ $attendance->clock_in_at ? substr($attendance->clock_in_at, 0, 5) : '' }}
                     </td>
                     <td>
-                        {{ $attendance->clock_out_at ? \Illuminate\Support\Str::of($attendance->clock_out_at)->limit(5, '') : '' }}
+                        {{ $attendance->clock_out_at ? substr($attendance->clock_out_at, 0, 5) : '' }}
                     </td>
-                    <td>{{ minutes_to_hm($attendance->break_minutes) }}</td>
-                    <td>{{ minutes_to_hm($attendance->net_minutes) }}</td>
+                    <td>{{ $hm($attendance->break_minutes) }}</td>
+                    <td>{{ $hm($attendance->net_minutes) }}</td>
                     <td>
                         <a href="{{ route('admin.attendance.show', ['id' => $attendance->id]) }}">
                             詳細

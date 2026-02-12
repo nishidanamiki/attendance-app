@@ -92,7 +92,7 @@
         <td>
             <div class="cols3">
                 @php
-                    $remarksValue = old('remarks', $pendingRequest->remarks ?? '');
+                    $remarksValue = old('remarks', '');
                 @endphp
                 <textarea class="remarks" name="remarks" id="remarks" rows="3">{{ $remarksValue }}</textarea>
             </div>

@@ -8,7 +8,7 @@
         <th>名前</th>
         <td>
             <div class="cols3">
-                <span class="value-box value-box--name">{{ $userForDisplay->name }}</span>
+                <span class="value-box value-box--name">{{ $userForDisplay->name ?? '(ユーザー不明)' }}</span>
             </div>
         </td>
     </tr>
@@ -60,7 +60,7 @@
         <th>備考</th>
         <td>
             <div class="remarks-readonly">
-                {{ $stampRequest->remarks ?? ($pendingRequest->remarks ?? '') }}
+                {{ $pendingRequest->remarks ?? '' }}
             </div>
         </td>
     </tr>

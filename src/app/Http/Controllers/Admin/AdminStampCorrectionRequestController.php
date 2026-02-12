@@ -72,6 +72,6 @@ class AdminStampCorrectionRequestController extends Controller
             $stampRequest->save();
         });
 
-        return redirect()->route('admin.stamp_correction_request.show', $stampRequest->id);
+        return redirect()->route('admin.stamp_correction_request.show', ['attendance_correct_request_id' => $stampRequest->id]);
     }
 }

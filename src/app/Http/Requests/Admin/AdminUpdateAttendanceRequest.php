@@ -11,12 +11,6 @@ class AdminUpdateAttendanceRequest extends StoreStampCorrectionRequest
      */
     public function authorize(): bool
     {
-        logger()->info('AdminUpdateAttendanceRequest authorize', [
-            'auth' => auth()->check(),
-            'user_id' => auth()->user()?->id,
-            'is_admin' => auth()->user()?->is_admin,
-            'path' => request()->path(),
-        ]);
         return auth()->check() && auth()->user()->is_admin;
     }
 

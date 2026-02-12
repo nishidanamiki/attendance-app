@@ -13,24 +13,20 @@ class StampCorrectionRequestController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $tab = $request->query('tab', 'pending');
 
-        if ($tab === 'approved') {
-            $status = 'approved';
-        } else {
-            $tab = 'pending';
-            $status = 'pending';
-        }
+        $tab = $request->query('tab', 'pending');
+        $status = ($tab === 'approved') ? 'approved' : 'pending';
+        $tab = ($status === 'approved') ? 'approved' : 'pending';
 
         if ($user->is_admin) {
-            $requests = StampCorrectionRequest::with(['user', 'attendance'])->where('status', $status)->orderByDesc('created_at')->get();
+            $stampRequests = StampCorrectionRequest::with(['user', 'attendance'])->where('status', $status)->orderByDesc('created_at')->get();
 
-            return view('admin.stamp_correction_request.list', compact('requests', 'tab'));
+            return view('admin.stamp_correction_request.list', compact('stampRequests', 'tab'));
         }
 
-        $requests = $user->stampCorrectionRequests()->where('status', $status)->orderByDesc('created_at')->get();
+        $stampRequests = $user->stampCorrectionRequests()->where('status', $status)->orderByDesc('created_at')->get();
 
-        return view('stamp_correction_request.list', compact('requests', 'tab'));
+        return view('stamp_correction_request.list', compact('stampRequests', 'tab'));
     }
 
     public function store(StoreStampCorrectionRequest $request)
@@ -84,7 +80,7 @@ class StampCorrectionRequestController extends Controller
                 'break_out_at' => $end,
             ]);
         }
-        return redirect()->route('attendance.detail', $attendanceId);
+        return redirect()->route('attendance.detail', ['id' => $attendanceId]);
     }
 
     public function show($id)

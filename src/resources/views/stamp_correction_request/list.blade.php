@@ -28,28 +28,28 @@
                 <th>申請日時</th>
                 <th>詳細</th>
             </tr>
-            @forelse ($requests as $request)
+            @forelse ($stampRequests as $stampRequest)
                 <tr>
                     <td>
-                        @if ($request->status === 'pending')
+                        @if ($stampRequest->status === 'pending')
                             承認待ち
-                        @elseif ($request->status === 'approved')
+                        @elseif ($stampRequest->status === 'approved')
                             承認済み
                         @else
-                            {{ $request->status }}
+                            {{ $stampRequest->status }}
                         @endif
                     </td>
-                    <td>{{ $request->user->name }}</td>
-                    <td>{{ \Carbon\Carbon::parse($request->work_date)->format('Y/m/d') }}</td>
+                    <td>{{ $stampRequest->user->name }}</td>
+                    <td>{{ \Carbon\Carbon::parse($stampRequest->work_date)->format('Y/m/d') }}</td>
                     <td>
                         <div class="remarks-cell">
-                            {{ $request->remarks }}
+                            {{ $stampRequest->remarks }}
                         </div>
                     </td>
-                    <td>{{ $request->created_at->format('Y/m/d') }}</td>
+                    <td>{{ $stampRequest->created_at->format('Y/m/d') }}</td>
                     <td>
-                        @if ($request->attendance_id)
-                            <a href="{{ route('stamp_correction_request.show', ['id' => $request->id]) }}">
+                        @if ($stampRequest->attendance_id)
+                            <a href="{{ route('stamp_correction_request.show', ['id' => $stampRequest->id]) }}">
                                 詳細
                             </a>
                         @else
