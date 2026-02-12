@@ -31,7 +31,7 @@
                 <th>申請日時</th>
                 <th>詳細</th>
             </tr>
-            @forelse ($requests as $request)
+            @forelse ($stampRequests as $request)
                 <tr>
                     <td>
                         @if ($request->status === 'pending')

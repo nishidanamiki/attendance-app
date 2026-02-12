@@ -29,7 +29,7 @@ class DateTimeDisplayTest extends TestCase
         $response = $this->actingAs($user)->get('/attendance');
         $response->assertOk();
 
-        $expectedDate = $fixedNow->copy()->locale('ja')->isoFormat('YYYY年MM月DD日(ddd)');
+        $expectedDate = $fixedNow->copy()->locale('ja')->isoFormat('YYYY年M月D日(ddd)');
         $expectedTime = $fixedNow->format('H:i');
 
         $response->assertSee($expectedDate);

@@ -37,9 +37,12 @@ class AdminAttendanceDetailTest extends TestCase
         $staff = $this->loginVerifiedUser(['name' => '一般ユーザー', 'is_admin' => false]);
         $attendance = $this->createBaseAttendance($staff, '2026-02-02');
 
-        $response = $this->actingAs($admin) ->from('/admin/attendance/' . $attendance->id)->patch('/admin/attendance/' .$attendance->id,[
+        $response = $this->actingAs($admin) ->from('/admin/attendance/' . $attendance->id)->post('/admin/attendance/upsert', [
+            'user_id' => $attendance->user_id,
+            'work_date' => $attendance->work_date,
             'clock_in_at' => '19:00',
             'clock_out_at' => '18:00',
+            'remarks' => 'テスト',
         ]);
 
         $response->assertStatus(302);
@@ -54,12 +57,15 @@ class AdminAttendanceDetailTest extends TestCase
         $staff = $this->loginVerifiedUser(['name' => '一般ユーザー', 'is_admin' => false]);
         $attendance = $this->createBaseAttendance($staff, '2026-02-02');
 
-        $response = $this->actingAs($admin)->from('/admin/attendance/' .$attendance->id)->patch('/admin/attendance/' . $attendance->id, [
+        $response = $this->actingAs($admin)->from('/admin/attendance/' .$attendance->id)->post('/admin/attendance/upsert', [
+            'user_id' => $attendance->user_id,
+            'word_date' => $attendance->work_date,
             'clock_in_at' => '09:00',
             'clock_out_at' => '18:00',
             'breaks' => [
                 ['id' => '', 'start' => '18:30', 'end' => '18:40'],
             ],
+            'remarks' => 'テスト',
         ]);
 
         $response->assertStatus(302);
@@ -74,12 +80,15 @@ class AdminAttendanceDetailTest extends TestCase
         $staff = $this->loginVerifiedUser(['name' => '一般ユーザー', 'is_admin' => false]);
         $attendance = $this->createBaseAttendance($staff, '2026-02-02');
 
-        $response = $this->actingAs($admin)->from('/admin/attendance/' . $attendance->id)->patch('/admin/attendance/' . $attendance->id, [
+        $response = $this->actingAs($admin)->from('/admin/attendance/' . $attendance->id)->post('/admin/attendance/upsert', [
+            'user_id' => $attendance->user_id,
+            'work_date' => $attendance->work_date,
             'clock_in_at' => '09:00',
             'clock_out_at' => '18:00',
             'breaks' => [
                 ['id' => '', 'start' => '17:30', 'end' => '18:30'],
             ],
+            'remarks' => 'テスト',
         ]);
 
         $response->assertStatus(302);
@@ -94,7 +103,9 @@ class AdminAttendanceDetailTest extends TestCase
         $staff = $this->loginVerifiedUser(['name' => '一般ユーザー', 'is_admin' => false]);
         $attendance = $this->createBaseAttendance($staff, '2026-02-02');
 
-        $response = $this->actingAs($admin)->from('/admin/attendance/' . $attendance->id)->patch('/admin/attendance/' . $attendance->id, [
+        $response = $this->actingAs($admin)->from('/admin/attendance/' . $attendance->id)->post('/admin/attendance/upsert', [
+            'user_id' => $attendance->user_id,
+            'work_date' => $attendance->work_date,
             'clock_in_at' => '09:00',
             'clock_out_at' => '18:00',
             'breaks' => [['id' => '', 'start' => '', 'end' => '']],
