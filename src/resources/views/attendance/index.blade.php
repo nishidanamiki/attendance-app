@@ -23,7 +23,7 @@
         </div>
         <div class="datetime">
             <div class="date" id="current-date">
-                {{ $now->locale('ja')->isoFormat('YYYY年MM月DD日(ddd)') }}
+                {{ $now->locale('ja')->isoFormat('YYYY年M月DD日(ddd)') }}
             </div>
             <div class="time" id="current-time">
                 {{ $now->format('H:i') }}
@@ -71,7 +71,7 @@
 
                 const days = ['日', '月', '火', '水', '木', '金', '土'];
                 const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const month = String(now.getMonth() + 1);
                 const date = String(now.getDate()).padStart(2, '0');
                 const day = days[now.getDay()];
                 dateEl.textContent = `${year}年${month}月${date}日(${day})`;
